@@ -1,10 +1,10 @@
 
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +40,7 @@ class TrataCliente extends Thread {
             System.out.println("Cliente conectadooooo!");
             Scanner entrada = new Scanner(cliente.getInputStream());
             DadosSerie DadosSerieServidor;
-            while (true) {
+
                 // Create input and output streams to client
                 ObjectInputStream inFromClient = new ObjectInputStream(cliente.getInputStream());
                 //DadosSerieServidor = (DadosSerie) inFromClient.readObject();
@@ -49,15 +49,11 @@ class TrataCliente extends Thread {
                     //DadosSerieServidor = (DadosSerie) inFromClient.readObject();
                     System.out.println("TCHAU");
                     System.out.println("RECEBI? " + DadosSerieServidor.getNomeEpisodio()[1][1]);
+                    ConectaBanco CBD = new ConectaBanco();
+                    CBD.InserirEpisodio(DadosSerieServidor);
                     break;
                 }
                 inFromClient.close();
-                //DadosSerie DadosSerieServidor = (DadosSerie) inFromClient.readObject();
-
-                /* Send the modified Message object back */
-                //outToClient.writeObject(inMsg);
-            }
-
             /*
              while (entrada.hasNextLine()) {
              System.out.println(entrada.nextLine());
@@ -66,6 +62,8 @@ class TrataCliente extends Thread {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (ClassNotFoundException ex) {
+            Logger.getLogger(TrataCliente.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
             Logger.getLogger(TrataCliente.class.getName()).log(Level.SEVERE, null, ex);
         }
 
