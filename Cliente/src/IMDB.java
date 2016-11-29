@@ -162,9 +162,7 @@ public class IMDB {
         Socket cliente = new Socket("127.0.0.1", 12345);
         System.out.println("O cliente se conectou ao servidor!");
         ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(cliente.getOutputStream());
-        ObjectInputStream ObjectInputStream = new ObjectInputStream(cliente.getInputStream());
         ObjectOutputStream.writeObject(d);
-        DadosSerie returnM = (DadosSerie)ObjectInputStream.readObject();
         ObjectOutputStream.close();
         cliente.close();
         //http://stackoverflow.com/questions/19217420/sending-an-object-through-a-socket-in-java

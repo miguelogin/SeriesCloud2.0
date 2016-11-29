@@ -1,4 +1,4 @@
-package servidor;
+
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -42,14 +42,16 @@ class TrataCliente extends Thread {
             DadosSerie DadosSerieServidor;
             while (true) {
                 // Create input and output streams to client
-                ObjectOutputStream outToClient = new ObjectOutputStream(cliente.getOutputStream());
                 ObjectInputStream inFromClient = new ObjectInputStream(cliente.getInputStream());
-                DadosSerieServidor = (DadosSerie) inFromClient.readObject();
+                //DadosSerieServidor = (DadosSerie) inFromClient.readObject();
+                System.out.println("OI");
                 while ((DadosSerieServidor = (DadosSerie) inFromClient.readObject()) != null) {
                     //DadosSerieServidor = (DadosSerie) inFromClient.readObject();
+                    System.out.println("TCHAU");
                     System.out.println("RECEBI? " + DadosSerieServidor.getNomeEpisodio()[1][1]);
                     break;
                 }
+                inFromClient.close();
                 //DadosSerie DadosSerieServidor = (DadosSerie) inFromClient.readObject();
 
                 /* Send the modified Message object back */
