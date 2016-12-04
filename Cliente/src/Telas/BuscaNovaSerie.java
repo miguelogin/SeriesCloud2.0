@@ -2,22 +2,26 @@ package Telas;
 
 import static java.awt.event.KeyEvent.*;
 import Servidor.BuscaWeb;
-import Servidor.DadosSerie;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -26,94 +30,215 @@ import javax.swing.table.TableColumnModel;
 public class BuscaNovaSerie extends javax.swing.JFrame {
 
     private int PaginaBusca;
+    private String TermoBusca;
+    private boolean Local = false;
+    private File arquivoBackupPesquisa = new File("src/backupPesquisa.txt");
+
+    public boolean isLocal() {
+        return Local;
+    }
 
     public BuscaNovaSerie() throws IOException, ClassNotFoundException {
         initComponents();
         jTableResultadoWeb.setEnabled(false);
         jTableResultadoWeb.setVisible(false);
+        if (arquivoBackupPesquisa.exists()) {
+            FileReader leitor = new FileReader(arquivoBackupPesquisa);
+            BufferedReader leitor_bufffer = new BufferedReader(leitor);
+            // a variável "linha" recebe o valor "null" quando o processo
+            // de repetição atingir o final do arquivo texto
+            String linha = null;
+            while ((linha = leitor_bufffer.readLine()) != null) {
+                String colunas[] = linha.split("#"); //lê a linha contendo a palavra e a dica, sabendo q as mesmas sao separadas pelo #
+                jTextFieldCampoBusca.setText(colunas[0]);
+                PaginaBusca = Integer.parseInt(colunas[1]);
+            }
+            leitor_bufffer.close();
+            try {
+                PesquisarSerieWeb();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            arquivoBackupPesquisa.deleteOnExit();
+        }
     }
 
-    public void PesquisarSerieWeb() throws IOException, ClassNotFoundException {
-        BuscaWeb BuscaWeb = new BuscaWeb(jTextFieldCampoBusca.getText(), PaginaBusca);
-        jTableResultadoWeb.setVisible(true);
-        jTableResultadoWeb.setEnabled(true);
-        DefaultTableModel TabelaResultadoWeb = (DefaultTableModel) jTableResultadoWeb.getModel();
-        TableColumnModel columnModel = jTableResultadoWeb.getColumnModel();
-        JTableRendererImage RendererImage = new JTableRendererImage();
-        JTableRendererImage RendererBorder = new JTableRendererImage();
-        TabelaResultadoWeb.setRowCount(0);
-        jTableResultadoWeb.setRowHeight(150);
-        jTableResultadoWeb.setRowMargin(5);
-        jTableResultadoWeb.setFont(new Font("Tahoma", Font.PLAIN, 20));
-        Color color = UIManager.getColor("Table.gridColor");
-
-        for (int x = 1; x <= BuscaWeb.getNumeroTotalResultados(); x++) { //limitação de 10 resultados
-            URL url;
-            ImageIcon PosterSerie;
-            if (BuscaWeb.getPosterBusca()[x].equals("N/A")) {
-                File DefaultImage = new File("src//images//default_poster.png");
-                BufferedImage BufferedImage = ImageIO.read(DefaultImage);
-                PosterSerie = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
+    public void PesquisarSerieWeb() throws IOException, ClassNotFoundException, InterruptedException {
+        arquivoBackupPesquisa.delete();
+        if (jTextFieldCampoBusca.getText().equals("")) {
+            JOptionPane.showMessageDialog(this, "O campo de busca está vazio!", "Busca nula", JOptionPane.ERROR_MESSAGE);
+        } else {
+            BuscaWeb BuscaWeb = new BuscaWeb(jTextFieldCampoBusca.getText(), PaginaBusca);
+            DefaultTableModel TabelaResultadoWeb = (DefaultTableModel) jTableResultadoWeb.getModel();
+            if (BuscaWeb.isSemResultados()) {
+                int TotalLinhas = TabelaResultadoWeb.getRowCount();
+                for (int x = TotalLinhas - 1; x >= 0; x--) {
+                    TabelaResultadoWeb.removeRow(x);
+                }
+                JOptionPane.showMessageDialog(this, "Não encontramos nenhuma série envolvendo \"" + jTextFieldCampoBusca.getText() + "\".\nRevise ou refine a sua busca.", "Série não econtrada", JOptionPane.ERROR_MESSAGE);
             } else {
-                url = new URL(BuscaWeb.getPosterBusca()[x]);
-                BufferedImage BufferedImage = ImageIO.read(url);
-                PosterSerie = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
-            }
-            jLabelProfilePicture.setIcon(PosterSerie);
-            TabelaResultadoWeb.addRow(new Object[]{PosterSerie, BuscaWeb.getNomeBusca()[x], BuscaWeb.getAnoBusca()[x]});
-        }
-        if (BuscaWeb.getNumeroTotalResultados() == 10) {
-            File MaisResultadosImage = new File("src//images//mais.jpg");
-            BufferedImage BufferedImage = ImageIO.read(MaisResultadosImage);
-            ImageIcon MaisResultados = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
-            TabelaResultadoWeb.addRow(new Object[]{MaisResultados, "CARREGAR MAIS RESULTADOS", ""});
-        }
-        columnModel.getColumn(0).setCellRenderer(RendererImage);
-        columnModel.getColumn(1).setCellRenderer(RendererBorder);
-        columnModel.getColumn(2).setCellRenderer(RendererBorder);
-        jTableResultadoWeb.requestFocus(true);
-        jTableResultadoWeb.setRowSelectionInterval(0, 0);
-        //sobreescreve os listeners padrões por novos
-        jTableResultadoWeb.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                //MAIS RESULTADOS
-                if (jTableResultadoWeb.getSelectedRow() == BuscaWeb.getNumeroTotalResultados()) {
-                    try {
-                        if (BuscaWeb.getNumeroTotalResultados() == 10) {
-                            PaginaBusca++;
-                            PesquisarSerieWeb();
-                            jTableResultadoWeb.getSelectionModel().setSelectionInterval(0, 0);
-                            jTableResultadoWeb.scrollRectToVisible(new Rectangle(jTableResultadoWeb.getCellRect(0, 0, true)));
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                jTableResultadoWeb.setVisible(true);
+                jTableResultadoWeb.setEnabled(true);
+                TableColumnModel columnModel = jTableResultadoWeb.getColumnModel();
+                JTableRendererImage RendererImage = new JTableRendererImage();
+                JTableRendererImage RendererBorder = new JTableRendererImage();
+                TabelaResultadoWeb.setRowCount(0);
+                jTableResultadoWeb.setRowHeight(150);
+                jTableResultadoWeb.setRowMargin(5);
+                jTableResultadoWeb.setFont(new Font("Tahoma", Font.PLAIN, 20));
+                Color color = UIManager.getColor("Table.gridColor");
+                for (int x = 1; x <= BuscaWeb.getNumeroTotalResultados(); x++) { //limitação de 10 resultados
+                    URL url;
+                    ImageIcon PosterSerie;
+                    if (BuscaWeb.getPosterSerie()[x].equals("N/A")) {
+                        File DefaultImage = new File("src//images//default_poster.png");
+                        BufferedImage BufferedImage = ImageIO.read(DefaultImage);
+                        PosterSerie = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
+                    } else {
+                        url = new URL(BuscaWeb.getPosterSerie()[x]);
+                        BufferedImage BufferedImage = ImageIO.read(url);
+                        PosterSerie = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
                     }
+                    jLabelProfilePicture.setIcon(PosterSerie);
+                    //coloca os dados da série na tabela
+                    TabelaResultadoWeb.addRow(new Object[]{PosterSerie, BuscaWeb.getNomeBusca()[x], BuscaWeb.getAnoBusca()[x]});
                 }
-            }
-        });
-        jTableResultadoWeb.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (jTableResultadoWeb.getSelectedRow() == BuscaWeb.getNumeroTotalResultados()) {
-                    try {
-                        if (BuscaWeb.getNumeroTotalResultados() == 10) {
-                            PaginaBusca++;
-                            PesquisarSerieWeb();
-                            jTableResultadoWeb.getSelectionModel().setSelectionInterval(0, 0);
-                            jTableResultadoWeb.scrollRectToVisible(new Rectangle(jTableResultadoWeb.getCellRect(0, 0, true)));
+                if (BuscaWeb.getNumeroTotalResultados() == 10) {
+                    File MaisResultadosImage = new File("src//images//mais.jpg");
+                    BufferedImage BufferedImage = ImageIO.read(MaisResultadosImage);
+                    ImageIcon MaisResultados = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
+                    TabelaResultadoWeb.addRow(new Object[]{MaisResultados, "CARREGAR MAIS RESULTADOS", ""});
+                }
+                columnModel.getColumn(0).setCellRenderer(RendererImage);
+                columnModel.getColumn(1).setCellRenderer(RendererBorder);
+                columnModel.getColumn(2).setCellRenderer(RendererBorder);
+                jTableResultadoWeb.requestFocus(true);
+                jTableResultadoWeb.setRowSelectionInterval(0, 0);
+                //sobreescreve os listeners padrões por novos /////////////////////////////////////////AÇÕES NA TABELAS/////////
+                jTableResultadoWeb.addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        //MAIS RESULTADOS
+                        if (jTableResultadoWeb.getSelectedRow() == BuscaWeb.getNumeroTotalResultados()) { /////////// CLICA EM MAIS RESULTADOS
+                            try {
+                                if (BuscaWeb.getNumeroTotalResultados() == 10) {
+                                    PaginaBusca++;
+                                    PesquisarSerieWeb();
+                                    jTableResultadoWeb.getSelectionModel().setSelectionInterval(0, 0);
+                                    jTableResultadoWeb.scrollRectToVisible(new Rectangle(jTableResultadoWeb.getCellRect(0, 0, true)));
+                                }
+                            } catch (IOException ex) {
+                                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (ClassNotFoundException ex) {
+                                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        } else { //////////////////////////////////////////////////////////////////////////////// CLICA EM ALGUMA SÉRIE
+                            try {
+                                BuscaWeb.BuscaSerieEspecifica((BuscaWeb.getNomeBusca()[jTableResultadoWeb.getSelectedRow() + 1]), BuscaWeb.getAnoInicio()[jTableResultadoWeb.getSelectedRow() + 1], jTableResultadoWeb.getSelectedRowCount() + 1);
+                                //POR ALGUM MOTIVO O BUFFERDIMAGE E O IMAGEICON N PASSAVAM VALORES PARA A OUTRA TELA
+                                //MESMO CHECANDO AQUI Q ELES N ESTAVAM NULOS. DECIDI ENTÃO BAIXAR A IMAGEM PARA UTILIZAR NA OUTRA TELA
+                                BaixarImagem(BuscaWeb.getPosterSerie()[jTableResultadoWeb.getSelectedRow() + 1], "src//images//temp//temp_poster.png");
+                                TelaSerie TelaSerie = new TelaSerie();
+                                BuscaNovaSerieDispose();
+                                TelaSerie.setVisible(true);
+                                Local = true;
+                                try {
+                                    FileWriter arquivoWriter = new FileWriter(arquivoBackupPesquisa, true);
+                                    PrintWriter escrever = new PrintWriter(arquivoWriter);
+                                    escrever.println(jTextFieldCampoBusca.getText() + "#" + PaginaBusca);
+                                    arquivoWriter.close();
+                                    BufferedReader leitor_buffer = new BufferedReader(new FileReader("src/backupPesquisa.txt"));
+                                    while (leitor_buffer.ready()) {
+                                        String linha = leitor_buffer.readLine(); // lê até a última linha
+                                    }
+                                    leitor_buffer.close();
+                                } catch (Exception ex) {
+                                }
+                            } catch (IOException ex) {
+                                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (ClassNotFoundException ex) {
+                                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
+                });
+                jTableResultadoWeb.addKeyListener(new java.awt.event.KeyAdapter() {
+                    @Override
+                    public void keyPressed(java.awt.event.KeyEvent e) {
+                        if (e.getKeyCode() == VK_ENTER) {
+                            if (jTableResultadoWeb.getSelectedRow() == BuscaWeb.getNumeroTotalResultados()) {//////// ENTER EM MAIS RESULTADOS
+                                try {
+                                    if (BuscaWeb.getNumeroTotalResultados() == 10) {
+                                        PaginaBusca++;
+                                        PesquisarSerieWeb();
+                                        jTableResultadoWeb.getSelectionModel().setSelectionInterval(0, 0);
+                                        jTableResultadoWeb.scrollRectToVisible(new Rectangle(jTableResultadoWeb.getCellRect(0, 0, true)));
+                                    }
+                                } catch (IOException ex) {
+                                    Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (ClassNotFoundException ex) {
+                                    Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            } else {
+                                try {
+                                    //////////////////////////////////////////////////////////////////////////////// ENTER EM ALGUMA SÉRIE
+                                    BuscaWeb.BuscaSerieEspecifica((BuscaWeb.getNomeBusca()[jTableResultadoWeb.getSelectedRow() + 1]), BuscaWeb.getAnoInicio()[jTableResultadoWeb.getSelectedRow() + 1], jTableResultadoWeb.getSelectedRowCount() + 1);
+                                    //POR ALGUM MOTIVO O BUFFERDIMAGE E O IMAGEICON N PASSAVAM VALORES PARA A OUTRA TELA
+                                    //MESMO CHECANDO AQUI Q ELES N ESTAVAM NULOS. DECIDI ENTÃO BAIXAR A IMAGEM PARA UTILIZAR NA OUTRA TELA
+                                    BaixarImagem(BuscaWeb.getPosterSerie()[jTableResultadoWeb.getSelectedRow() + 1], "src//images//temp//temp_poster.png");
+                                    TelaSerie TelaSerie = new TelaSerie();
+                                    BuscaNovaSerieDispose();
+                                    TelaSerie.setVisible(true);
+                                    Local = true;
+                                    try {
+                                        FileWriter arquivoWriter = new FileWriter(arquivoBackupPesquisa, true);
+                                        PrintWriter escrever = new PrintWriter(arquivoWriter);
+                                        escrever.println(jTextFieldCampoBusca.getText() + "#" + PaginaBusca);
+                                        arquivoWriter.close();
+                                        BufferedReader leitor_buffer = new BufferedReader(new FileReader("src/backupPesquisa.txt"));
+                                        while (leitor_buffer.ready()) {
+                                            String linha = leitor_buffer.readLine(); // lê até a última linha
+                                        }
+                                        leitor_buffer.close();
+                                    } catch (Exception ex) {
+                                    }
+                                } catch (IOException ex) {
+                                    Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (ClassNotFoundException ex) {
+                                    Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        } else {
+                        }
+                    }
+                });
             }
-        });
-        System.err.println(BuscaWeb.getNumeroTotalResultados());
+        }
+    }
+
+    public void BuscaNovaSerieDispose() {
+        this.dispose();
+    }
+
+    public static void BaixarImagem(String imageUrl, String destinationFile) throws IOException {
+        System.out.println(imageUrl);
+        System.out.println(destinationFile);
+        URL url = new URL(imageUrl);
+        InputStream is = url.openStream();
+        OutputStream os = new FileOutputStream(destinationFile);
+
+        byte[] b = new byte[2048];
+        int length;
+
+        while ((length = is.read(b)) != -1) {
+            os.write(b, 0, length);
+        }
+        is.close();
+        os.close();
     }
 
     public class JTableRendererImage extends DefaultTableCellRenderer { //classe do tipo padrão de renderer de tabelas do java q aceita imageicon
@@ -308,6 +433,8 @@ public class BuscaNovaSerie extends javax.swing.JFrame {
             Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButtonPesquisarActionPerformed
 
@@ -319,6 +446,8 @@ public class BuscaNovaSerie extends javax.swing.JFrame {
             } catch (IOException ex) {
                 Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
+                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
                 Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -332,6 +461,8 @@ public class BuscaNovaSerie extends javax.swing.JFrame {
             } catch (IOException ex) {
                 Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
+                Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
                 Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -362,20 +493,6 @@ public class BuscaNovaSerie extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(BuscaNovaSerie.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 

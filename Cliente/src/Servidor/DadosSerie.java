@@ -4,12 +4,12 @@ import java.io.Serializable;
 //CLIENTE
 public class DadosSerie implements Serializable{ 
     
-    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, int Generos, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String PosterSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int[][] DuracaoEpisodio, String PosterEpisodio) {
+    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, String Categoria, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String PosterSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int DuracaoEpisodio, String[][] PosterEpisodio) {
         this.NomeSerie = NomeSerie;
         this.AnoInicio = AnoInicio;
         this.AnoFim = AnoFim;
         this.Sinopse = Sinopse;
-        this.Generos = Generos;
+        this.Categoria = Categoria;
         this.TotalTemporadas = TotalTemporadas;
         this.TotalEpisodios = TotalEpisodios;
         this.NotaSerie = NotaSerie;
@@ -34,7 +34,7 @@ public class DadosSerie implements Serializable{
     private int AnoInicio;
     private int AnoFim;
     private String Sinopse;
-    private int Generos;
+    private String Categoria;
     private int TotalTemporadas;
     private int TotalEpisodios;
     private float NotaSerie;
@@ -42,8 +42,8 @@ public class DadosSerie implements Serializable{
     private String[][] NomeEpisodio;
     private String[][] ReleaseEpisodio;
     private float [][] NotaEpisodio;
-    private int [][] DuracaoEpisodio;
-    private String PosterEpisodio;
+    private int DuracaoEpisodio;
+    private String[][] PosterEpisodio;
 
     public String[] getNomeBusca() {
         return NomeBusca;
@@ -101,12 +101,12 @@ public class DadosSerie implements Serializable{
         this.Sinopse = Sinopse;
     }
 
-    public int getGeneros() {
-        return Generos;
+    public String getGeneros() {
+        return Categoria;
     }
 
-    public void setGeneros(int Generos) {
-        this.Generos = Generos;
+    public void setGeneros(String Generos) {
+        this.Categoria = Generos;
     }
 
     public int getTotalTemporadas() {
@@ -165,19 +165,19 @@ public class DadosSerie implements Serializable{
         this.NotaEpisodio = NotaEpisodio;
     }
 
-    public int[][] getDuracaoEpisodio() {
+    public int getDuracaoEpisodio() {
         return DuracaoEpisodio;
     }
 
-    public void setDuracaoEpisodio(int[][] DuracaoEpisodio) {
+    public void setDuracaoEpisodio(int DuracaoEpisodio) {
         this.DuracaoEpisodio = DuracaoEpisodio;
     }
 
-    public String getPosterEpisodio() {
+    public String[][] getPosterEpisodio() {
         return PosterEpisodio;
     }
 
-    public void setPosterEpisodio(String PosterEpisodio) {
+    public void setPosterEpisodio(String[][] PosterEpisodio) {
         this.PosterEpisodio = PosterEpisodio;
     }
 }

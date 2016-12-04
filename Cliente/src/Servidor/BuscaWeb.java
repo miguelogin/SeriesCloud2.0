@@ -1,17 +1,19 @@
 package Servidor;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Scanner;
-import jdk.nashorn.internal.parser.TokenType;
 
 public class BuscaWeb {
 
@@ -24,182 +26,191 @@ public class BuscaWeb {
     private String BuscaNomeSerie;
     private String[] NomeBusca = new String[11]; //11 é a limitação de resultados = 10 resultados
     private String[] AnoBusca = new String[11];
-    private String[] PosterBusca = new String[11];
+    private String TermoBusca;
+
     private int NumeroTotalResultados;
     public int PaginaBusca;
-    private boolean LimitePesquisa = false;
+    private boolean SemResultados = false;
+    private int QuatidadeCategorias;
+    private int[] AnoInicio = new int[11];
+    private int[] AnoFim = new int[11];
+    private String[] PosterSerie = new String[11];
+    private String[][] PosterEpisodio;
+    private int DuracaoEpisodio;
+    private String[] Categoria;
+    private String SinopseSerie;
+    private float NotaSerie;
+    private int TotalTemporadas;
+    private int TotalEpisodios;
+    private int WatchTimeDias;
+    private int WatchTimeHoras;
+
+    private int id;
+    private String[] TotalEpisodiosTemporada;
+
+    public int getWatchTimeMinutos() {
+        return WatchTimeDias;
+    }
+
+    private String[][] NomeEpisodio;
+    private String[][] ReleaseDate;
+    private float[][] NotaEpisodio;
 
     private String getBuscaNomeSerie() {
         return BuscaNomeSerie;
-    }
-
-    private void setBuscaNomeSerie(String BuscaNomeSerie) {
-        this.BuscaNomeSerie = BuscaNomeSerie;
     }
 
     public String[] getNomeBusca() {
         return NomeBusca;
     }
 
-    private void setNomeBusca(String[] NomeBusca) {
-        this.NomeBusca = NomeBusca;
-    }
-
     public String[] getAnoBusca() {
         return AnoBusca;
     }
 
-    private void setAnoBusca(String[] AnoBusca) {
-        this.AnoBusca = AnoBusca;
+    public String[] getPosterSerie() {
+        return PosterSerie;
     }
 
-    public String[] getPosterBusca() {
-        return PosterBusca;
-    }
-
-    private void setPosterBusca(String[] PosterBusca) {
-        this.PosterBusca = PosterBusca;
-    }
-
-    public boolean isLimitePesquisa() {
-        return LimitePesquisa;
-    }
-
-    public void setLimitePesquisa(boolean LimitePesquisa) {
-        this.LimitePesquisa = LimitePesquisa;
+    public boolean isSemResultados() {
+        return SemResultados;
     }
 
     public int getNumeroTotalResultados() {
         return NumeroTotalResultados;
     }
 
-    private void setNumeroTotalResultados(int NumeroTotalResultados) {
-        this.NumeroTotalResultados = NumeroTotalResultados;
-    }
-    
     public int getPaginaBusca() {
         return PaginaBusca;
     }
 
-    public void setPaginaBusca(int PaginaBusca) {
-        this.PaginaBusca = PaginaBusca;
+    public int[] getAnoInicio() {
+        return AnoInicio;
+    }
+
+    public int[] getAnoFim() {
+        return AnoFim;
+    }
+
+    public void BotaPorcento(String NomeBusca) {
+        String[] Anular = {" "};
+        if (NomeBusca.contains(" ")) {
+            for (String n : Anular) {
+                TermoBusca = NomeBusca.replaceAll(n, "%20");
+            }
+        } else {
+            TermoBusca = NomeBusca;
+        }
+
+        System.err.println(TermoBusca);
     }
 
     //http://www.omdbapi.com/?t=Doctor%20Who&y=2005&Season=1&episode=1
     public void BuscaGeral() throws IOException, ClassNotFoundException {
-        NumeroTotalResultados = 0;
-        String[] Anular = {" "};
-        String TermoBusca = getBuscaNomeSerie();
-        System.out.println(TermoBusca);
-        if (getBuscaNomeSerie().contains(" ")) {
-            for (String n : Anular) {
-                TermoBusca = TermoBusca.replaceAll(n, "%20");
-            }
-        } else {
-            TermoBusca = getBuscaNomeSerie();
-        }
-        //REALIZA E CAPTA OS DADOS DE BUSCA PARA O USUÁRIO
-        String DadosRetornoSite;
-        URL url = new URL("http://www.omdbapi.com/?s=" + TermoBusca + "&type=series&page="+PaginaBusca);
-        System.out.println("URL = " + url);
-        URLConnection spoof = url.openConnection();
-        //Engana o site para pareçamos um navegador
-        spoof.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
-        BufferedReader in = new BufferedReader(new InputStreamReader(spoof.getInputStream()));
-        //Percorre todas as linha do site e salva em uma String
-        DadosRetornoSite = in.readLine();
-        String[] ResultadoSplitado = DadosRetornoSite.split("\"Title\":");
-        String[] AnoSplitado;
         try {
-            for (int x = 1; x <= 10; x++) {
-                //Separa o nome da série
-                NomeBusca[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"") + 1, ResultadoSplitado[x].indexOf("\","));
-                //Separa o ano da série
-                AnoBusca[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("Year\":\"") + 7, ResultadoSplitado[x].indexOf("\",\"imdbID\":\""));
-                //Separa o URL do poster
-                PosterBusca[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"Poster\":\"") + 10, ResultadoSplitado[x].indexOf("\"}"));
-                NumeroTotalResultados++;
+            NumeroTotalResultados = 0;
+            //REALIZA E CAPTA OS DADOS DE BUSCA PARA O USUÁRIO
+            BotaPorcento(getBuscaNomeSerie());
+            URL url = new URL("http://www.omdbapi.com/?s=" + TermoBusca + "&type=series&page=" + PaginaBusca);
+            System.out.println("BUSCA SÉRIES = " + url);
+            URLConnection spoof = url.openConnection();
+            //Engana o site para pareçamos um navegador
+            spoof.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
+            BufferedReader in = new BufferedReader(new InputStreamReader(spoof.getInputStream()));
+            //Percorre todas as linha do site e salva em uma String
+            String DadosRetornoSite = in.readLine();
+            String[] ResultadoSplitado = DadosRetornoSite.split("\"Title\":");
+            try {
+                for (int x = 1; x <= 10; x++) {
+                    //Separa o nome da série
+                    NomeBusca[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"") + 1, ResultadoSplitado[x].indexOf("\","));
+                    //Separa o ano da série
+                    AnoBusca[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("Year\":\"") + 7, ResultadoSplitado[x].indexOf("\",\"imdbID\":\""));
+                    //o - que separa as datas n é um - normal e mesmo utilizando o original estava dando bug no .split
+                    //por isso tivemos de fazer essa gambiarra com o .substring;
+                    if (AnoBusca[x].length() == 4) {                      // 2005
+                        AnoInicio[x] = Integer.parseInt(AnoBusca[x]);
+                        AnoFim[x] = 0;
+                    } else if (AnoBusca[x].length() == 5) {                //2005-
+                        AnoInicio[x] = Integer.parseInt(AnoBusca[x].substring(0, 4));
+                        AnoFim[x] = 0;
+                    } else {                                              //2005-2010
+                        AnoInicio[x] = Integer.parseInt(AnoBusca[x].substring(0, 4));
+                        AnoFim[x] = Integer.parseInt(AnoBusca[x].substring(5, 9));
+                    }
+                    //Separa o URL do poster
+                    PosterSerie[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"Poster\":\"") + 10, ResultadoSplitado[x].indexOf("\"}"));
+                    NumeroTotalResultados++;
+                }
+                DadosSerie DadosSerie = new DadosSerie(NomeBusca, AnoBusca, PosterSerie);
+            } catch (Exception e) { //se cair nesse catch quer dizer que a pesquisa não retorna mais de 10 resultados
+                if (NumeroTotalResultados == 0) {
+                    SemResultados = true;
+                }
             }
-            DadosSerie DadosSerie = new DadosSerie(NomeBusca, AnoBusca, PosterBusca);
-        } catch (Exception e) { //se cair nesse catch quer dizer que a pesquisa não retorna mais de 10 resultados
-            LimitePesquisa = true;
+        } catch (IOException e) {
+            System.err.println("OPEN IMDB API OFFLINE");
         }
     }
 
-    public static void BuscaGeral(String TermoBusca) throws IOException {
-        //REALIZA E CAPTA OS DADOS DE BUSCA PARA O USUÁRIO
-        String ResultText;
-        URL url = new URL("http://www.omdbapi.com/?s=" + TermoBusca + "&type=series");
-        URLConnection spoof = url.openConnection();
-        //Spoof the connection so we look like a web browser
-        spoof.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
-        BufferedReader in = new BufferedReader(new InputStreamReader(spoof.getInputStream()));
-        //Loop through every line in the source
-        ResultText = in.readLine();
-        try {
-            String[] ResultadoSplitado = ResultText.split("\"Title\":");
-            String[] Nome = new String[11];
-            String[] Ano = new String[11];
-            String[] Poster = new String[11];
-            for (int x = 1; x <= 11; x++) {
-                //Separa o nome da série
-                Nome[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"") + 1, ResultadoSplitado[x].indexOf("\","));
-                //Separa o ano da série
-                Ano[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("Year\":\"") + 7, ResultadoSplitado[x].indexOf("\",\"imdbID\":\""));
-                //Separa o URL do poster
-                Poster[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"Poster\":\"") + 10, ResultadoSplitado[x].indexOf("\"}"));
-                System.out.println(Nome[x] + " | " + Ano[x] + " | " + Poster[x]);
-            }
-        } catch (Exception e) {
-        }
-    }
-
-    public static void BuscaEspecifica(String TermoBusca, int Ano) throws IOException, ClassNotFoundException {
-        //REALIZA E CAPTA OS DADOS DE UMA SÉRIES ESPECÍFICA PARA O USUÁRIO
+    public void BuscaSerieEspecifica(String NomeBusca, int Ano, int posicaoTabela) throws IOException, ClassNotFoundException {
+        BotaPorcento(NomeBusca);
         String ResultadoSerie;
-        URL URLSerie = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&y=" + Ano + "&plot=short&r");
+        QuatidadeCategorias = 0;
+        URL URLSerie = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&type=series&y=" + Ano);
+        System.out.println("BUSCA DE DADOS DE " + NomeBusca + " = " + URLSerie);
         URLConnection spoofSerie = URLSerie.openConnection();
         //Spoof the connection so we look like a web browser
         spoofSerie.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
-        BufferedReader inSerie = new BufferedReader(new InputStreamReader(spoofSerie.getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(spoofSerie.getInputStream()));
         //Loop through every line in the source
-        ResultadoSerie = inSerie.readLine();
-
-        //Tempo de Duração em minutos (fazer x nº de episódios x por temporada nº de temporadas 
-        String Duracao = ResultadoSerie.substring(ResultadoSerie.indexOf("\"Runtime\":\"") + 11, ResultadoSerie.indexOf(" min\","));
-        System.out.println(Duracao);
+        ResultadoSerie = in.readLine();
+        String[] ResultadoSplitado = ResultadoSerie.split("\"Title\":");
 
         //Categoria
         String Categorias = ResultadoSerie.substring(ResultadoSerie.indexOf("Genre\":\"") + 8, ResultadoSerie.indexOf("\",\"Director"));
-        String[] Categoria = Categorias.split(", ");
-        System.out.println(Categoria[0]);
-        System.out.println(Categoria[1]);
-
-        //Ano de início e fim da série
-        String AnoInicioSerie = ResultadoSerie.substring(ResultadoSerie.indexOf("\"Year\":\"") + 8, ResultadoSerie.indexOf("–"));
-        System.err.println("INÍCIO DA SÉRIE = " + AnoInicioSerie);
-        String AnoFimSerie = ResultadoSerie.substring(ResultadoSerie.indexOf("–") + 1, ResultadoSerie.indexOf("\",\"Rated"));
-        System.err.println("FIM DA SÉRIE = " + AnoFimSerie);
-
+        Categoria = Categorias.split(", ");
+        try {
+            for (int x = 0; x <= 1; x++) {
+                System.out.println(Categoria[x]);
+                QuatidadeCategorias = QuatidadeCategorias + 1;
+            }
+        } catch (Exception e) {
+        }
+        System.out.println("QuatidadeCategorias = " + QuatidadeCategorias);
         //Sinopse
-        String Sinopse = ResultadoSerie.substring(ResultadoSerie.indexOf("\"Plot\":\"") + 8, ResultadoSerie.indexOf("\",\"Language"));
-        System.out.println(Sinopse);
+        SinopseSerie = ResultadoSerie.substring(ResultadoSerie.indexOf("\"Plot\":\"") + 8, ResultadoSerie.indexOf("\",\"Language"));
+        System.out.println(SinopseSerie);
 
         //Avaliacao
-        String IMDBRating = ResultadoSerie.substring(ResultadoSerie.indexOf("\"imdbRating\":\"") + 14, ResultadoSerie.indexOf("\",\"imdbVotes"));
-        System.out.println(IMDBRating);
+        NotaSerie = Float.parseFloat(ResultadoSerie.substring(ResultadoSerie.indexOf("\"imdbRating\":\"") + 14, ResultadoSerie.indexOf("\",\"imdbVotes")));
+        System.out.println(NotaSerie);
 
         //Temporadas
-        String Temporadas = ResultadoSerie.substring(ResultadoSerie.indexOf("\"totalSeasons\":\"") + 16, ResultadoSerie.indexOf("\",\"Response"));
-        System.out.println(Temporadas);
+        TotalTemporadas = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"totalSeasons\":\"") + 16, ResultadoSerie.indexOf("\",\"Response")));
+        System.out.println(TotalTemporadas);
 
-        System.out.println("!! INICIANDO CAPTURA DOS DADOS DOS EPISÓDIOS !!");
-        String[] ResultadoSplitado;
-        int TotalEpisodios = 0;
-        //CAPTURA DADOS DOS EPISÓDIOS
+        //Tempo de Duração em minutos (fazer x nº de episódios x por temporada nº de temporadas 
+        DuracaoEpisodio = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"Runtime\":\"") + 11, ResultadoSerie.indexOf(" min\",")));
+        System.out.println(DuracaoEpisodio);
+
+        ////////////////caputa algumas tradução se existirem
+        try {
+            BuscaTraducao(NomeBusca, Ano);
+        } catch (Exception e) { /// SE CAIR NESSE CATCH NÃO HÁ TRADUÇÃO PARA A SINOPSE
+            System.err.println("Não pude encontrar uma tradução para a sinopse deste série");
+        }
+
+        System.err.println("! INICIANDO A CAPTURA DE DADOS DOS EPISÓDIOS! ");
+        //////////////////////////////////CAPTURA DADOS DOS EPISÓDIOS////////////////////////////////////////////////
+        TotalEpisodios = 0;
         int MaiorNumeroEpisodiosPorTemporada = 0;
-        for (int xTemp = 1; xTemp <= Integer.parseInt(Temporadas); xTemp++) {
-            URL URLEpisodio = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&y=" + Ano + "&Season=" + xTemp);
+        ///////////PEGA ALGUNS DADOS COMO O MAIOR NUMERO DE EPISÓDIOS POR TEMPORADA PRA DAIR PODER COMEÇAR A ARMAZENAR OS EPISÓDIOS EM UM ARRAY
+        for (int xTemp = 1; xTemp <= TotalTemporadas; xTemp++) {
+            URL URLEpisodio = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&type=series&y=" + Ano + "&Season=" + xTemp);
+            if (xTemp == 1) {
+                System.out.println("BUSCA EPISÓDIOS DE " + NomeBusca + " - " + URLEpisodio);
+            }
             URLConnection spoofEpisodio = URLEpisodio.openConnection();
             //Spoof the connection so we look like a web browser
             spoofEpisodio.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
@@ -215,36 +226,140 @@ public class BuscaWeb {
             }
         }
 
-        String[][] NomeEpisodio = new String[Integer.parseInt(Temporadas + 1)][MaiorNumeroEpisodiosPorTemporada + 1];
-        String[][] Release = new String[Integer.parseInt(Temporadas + 1)][MaiorNumeroEpisodiosPorTemporada + 1];
-        String[][] IMDBRatingEpisodio = new String[Integer.parseInt(Temporadas + 1)][MaiorNumeroEpisodiosPorTemporada + 1];
+        WatchTimeDias = (((TotalEpisodios * DuracaoEpisodio/*totalminutos*/) / 60/*horas*/) / 24/*dias*/);
+        WatchTimeHoras = (((TotalEpisodios * DuracaoEpisodio/*totalminutos*/) / 60/*horas*/) - (WatchTimeDias * 24));
+        System.err.println(WatchTimeDias + " dias " + WatchTimeHoras + " horas para concluir");
 
-        for (int xTemp = 1; xTemp <= Integer.parseInt(Temporadas); xTemp++) {
+        NomeEpisodio = new String[TotalTemporadas + 1][MaiorNumeroEpisodiosPorTemporada + 1];
+        ReleaseDate = new String[TotalTemporadas + 1][MaiorNumeroEpisodiosPorTemporada + 1];
+        NotaEpisodio = new float[TotalTemporadas + 1][MaiorNumeroEpisodiosPorTemporada + 1];
+        TotalEpisodiosTemporada = new String[MaiorNumeroEpisodiosPorTemporada];
+        for (int xTemp = 1; xTemp <= TotalTemporadas; xTemp++) {//for das temporadas
             URL URLEpisodio = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&y=" + Ano + "&Season=" + xTemp);
             URLConnection spoofEpisodio = URLEpisodio.openConnection();
-
             //Spoof the connection so we look like a web browser
             spoofEpisodio.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
             BufferedReader inEpisodio = new BufferedReader(new InputStreamReader(spoofEpisodio.getInputStream()));
-
             //Loop through every line in the source
             String ResultadoEpisodio = inEpisodio.readLine();
             ResultadoSplitado = ResultadoEpisodio.split("\"Title\":");
             //Procura o total de episodios da Temporada
-            String TotalEpisodiosTemporada = ResultadoEpisodio.substring(ResultadoEpisodio.lastIndexOf("Episode\":\"") + 10, ResultadoEpisodio.lastIndexOf("\",\"imdbRating"));
-            TotalEpisodios = TotalEpisodios + Integer.parseInt(TotalEpisodiosTemporada);
-            if (Integer.parseInt(TotalEpisodiosTemporada) > MaiorNumeroEpisodiosPorTemporada) {
-                MaiorNumeroEpisodiosPorTemporada = Integer.parseInt(TotalEpisodiosTemporada);
+            TotalEpisodiosTemporada[xTemp] = ResultadoEpisodio.substring(ResultadoEpisodio.lastIndexOf("Episode\":\"") + 10, ResultadoEpisodio.lastIndexOf("\",\"imdbRating"));
+            TotalEpisodios = TotalEpisodios + Integer.parseInt(TotalEpisodiosTemporada[xTemp]);
+            if (Integer.parseInt(TotalEpisodiosTemporada[xTemp]) > MaiorNumeroEpisodiosPorTemporada) {
+                MaiorNumeroEpisodiosPorTemporada = Integer.parseInt(TotalEpisodiosTemporada[xTemp]);
             }
-            for (int xEp = 1; xEp <= Integer.parseInt(TotalEpisodiosTemporada); xEp++) {
-                NomeEpisodio[xTemp][xEp] = ResultadoSplitado[xEp + 1].substring(ResultadoSplitado[xEp + 1].indexOf("\"") + 1, ResultadoSplitado[xEp + 1].indexOf("\",\"Released\":"));
-                Release[xTemp][xEp] = ResultadoSplitado[xEp + 1].substring(ResultadoSplitado[xEp + 1].indexOf("\"Released\":\"") + 12, ResultadoSplitado[xEp + 1].indexOf("\",\"Episode\""));
-                IMDBRatingEpisodio[xTemp][xEp] = ResultadoSplitado[xEp + 1].substring(ResultadoSplitado[xEp + 1].indexOf("\"imdbRating\":\"") + 14, ResultadoSplitado[xEp + 1].indexOf("\",\"imdbID\""));
-                System.out.println("Temporada [" + xTemp + "] Episódio [" + xEp + "] " + NomeEpisodio[xTemp][xEp] + " | Exibido em: " + Release[xTemp][xEp] + " | Nota = " + IMDBRatingEpisodio[xTemp][xEp]);
+            try {
+                for (int xEp = 1; xEp <= Integer.parseInt(TotalEpisodiosTemporada[xTemp]); xEp++) {//for dos episodios
+                    NomeEpisodio[xTemp][xEp] = ResultadoSplitado[xEp + 1].substring(ResultadoSplitado[xEp + 1].indexOf("\"") + 1, ResultadoSplitado[xEp + 1].indexOf("\",\"Released\":"));
+                    ReleaseDate[xTemp][xEp] = ResultadoSplitado[xEp + 1].substring(ResultadoSplitado[xEp + 1].indexOf("\"Released\":\"") + 12, ResultadoSplitado[xEp + 1].indexOf("\",\"Episode\""));
+                    NotaEpisodio[xTemp][xEp] = Float.parseFloat(ResultadoSplitado[xEp + 1].substring(ResultadoSplitado[xEp + 1].indexOf("\"imdbRating\":\"") + 14, ResultadoSplitado[xEp + 1].indexOf("\",\"imdbID\"")));
+                    System.out.println("Temporada [" + xTemp + "] Episódio [" + xEp + "] " + NomeEpisodio[xTemp][xEp] + " | Exibido em: " + ReleaseDate[xTemp][xEp] + " | Nota = " + NotaEpisodio[xTemp][xEp]);
+                }
+            } catch (Exception e) {
+                //SE CHEGAR A ENTRAR AQUI É POR ERRO NO BANCO DE DADOS DO OMDB TIPO TEM APENAS O EPISÓDIO 1 E 5 REGISTRADOS (FALTANDO 2,3,4);
+                //O NOSSO PROGRAMA VAI ARMAZER ENTÃO APENAS OS EPISÓDIOS 1 E 5, SENDO O EPISÓDIO 1 O 1ª EPISÓDIO DA TEMPORADA E O 5 O 2º
+            }
+
+            ///////////////////////////POSTER EPISODIO
+            PosterEpisodio = new String[TotalTemporadas][MaiorNumeroEpisodiosPorTemporada];
+             DadosSerie d = new DadosSerie(NomeBusca, AnoInicio[posicaoTabela], AnoFim[posicaoTabela], SinopseSerie, Categoria[0], TotalTemporadas, TotalEpisodios, NotaSerie, PosterSerie[posicaoTabela], NomeEpisodio, ReleaseDate, NotaEpisodio, DuracaoEpisodio, PosterEpisodio);
+             Socket cliente = new Socket("127.0.0.1", 12345);
+             System.out.println("O cliente se conectou ao servidor!");
+             ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(cliente.getOutputStream());
+             ObjectOutputStream.writeObject(d);
+             ObjectOutputStream.close();
+             cliente.close();
+        }
+
+        BaixarImagemSerie();
+    }
+
+    public void DadosTemporarios(String NomeBusca, int PosicaoTabela) {
+        try {
+            File arquivoBackupPesquisa = new File("src/DadosTemporariosSerie.txt");
+            FileWriter arquivoWriter = new FileWriter(arquivoBackupPesquisa, true);
+            PrintWriter escrever = new PrintWriter(arquivoWriter);
+            escrever.println(NomeBusca);
+            escrever.println("Categoria" + Categoria[0]);
+            escrever.println("AnoInicio" + AnoInicio[PosicaoTabela]);
+            escrever.println(AnoFim[PosicaoTabela]);
+            escrever.println(TotalEpisodios);
+            escrever.println(WatchTimeDias);
+            escrever.println(WatchTimeHoras);
+            escrever.println(TotalTemporadas);
+            escrever.println(SinopseSerie);
+            escrever.println(NotaSerie);
+            escrever.println(NomeEpisodio);
+            escrever.println();
+            escrever.println();
+            escrever.println();
+            arquivoWriter.close();
+            BufferedReader leitor_buffer = new BufferedReader(new FileReader("src/backupPesquisa.txt"));
+            while (leitor_buffer.ready()) {
+                String linha = leitor_buffer.readLine(); // lê até a última linha
+            }
+            leitor_buffer.close();
+        } catch (Exception ex) {
+        }
+    }
+
+    public void BuscaTraducao(String NomeBusca, int Ano) throws IOException {
+        /////////////////////PESQUISA SINOPSE TRADUZIDA 
+        id = 57243;
+        BotaPorcento(NomeBusca);
+        URL URLSerieTraduzida = new URL("https://api.themoviedb.org/3/search/tv?api_key=5544cda46810347ff08bf66491167824&language=pt-BR&query=" + TermoBusca + "&page=1&first_air_date_year=" + Ano);
+        System.out.println("BUSCA DE DADOS DE " + NomeBusca + " TRADUZIDOS = " + URLSerieTraduzida);
+        URLConnection spoofSerieTraduzida = URLSerieTraduzida.openConnection();
+        //Spoof the connection so we look like a web browser
+        spoofSerieTraduzida.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
+        BufferedReader inTraduziada = new BufferedReader(new InputStreamReader(spoofSerieTraduzida.getInputStream()));
+        //Loop through every line in the source
+        String ResultadoSerie = inTraduziada.readLine();
+        SinopseSerie = ResultadoSerie.substring(ResultadoSerie.indexOf("overview\":\"") + 11, ResultadoSerie.indexOf("\",\"first_air_date"));
+        System.err.println(SinopseSerie);
+        id = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"id\":") + 5, ResultadoSerie.indexOf(",\"backdrop_path")));
+        System.err.println("ID=" + id);
+    }
+
+    public void BaixarImagemSerie() throws IOException {
+        for (int xTemp = 1; xTemp <= TotalTemporadas; xTemp++) {
+            System.out.println("**" + TotalEpisodiosTemporada[xTemp]);
+            for (int xEp = 1; xEp <= Integer.parseInt(TotalEpisodiosTemporada[xTemp]); xEp++) {
+                try {
+                    URL IDEpisode = new URL("http://api.themoviedb.org/3/tv/" + id + "/season/+" + xTemp + "/episode/" + xEp + "?api_key=5544cda46810347ff08bf66491167824&language=pt-BR");
+                    URLConnection spoofEpisodio = IDEpisode.openConnection();
+                    //Spoof the connection so we look like a web browser
+                    spoofEpisodio.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
+                    BufferedReader inEpisodio = new BufferedReader(new InputStreamReader(spoofEpisodio.getInputStream()));
+                    //Loop through every line in the source
+
+                    String ResultadoEpisodio = inEpisodio.readLine();
+                    String ImagePath = ResultadoEpisodio.substring(ResultadoEpisodio.indexOf("still_path\":\"") + 13, ResultadoEpisodio.indexOf("\",\"vote_average"));
+                    URL PosterEpisodio = new URL("http://image.tmdb.org/t/p/w300/" + ImagePath);
+
+                    InputStream is = PosterEpisodio.openStream();
+                    OutputStream os = new FileOutputStream("src//images//temp//temp_temporada_" + xTemp + "_episodio_" + xEp + ".jpg");
+                    byte[] b = new byte[2048];
+                    int length;
+
+                    while ((length = is.read(b)) != -1) {
+                        os.write(b, 0, length);
+                    }
+
+                    is.close();
+                    os.close();
+                } catch (Exception e) {
+                    System.out.println("O episódio n existe");
+                }
             }
         }
-        System.out.println("sai?" + NomeEpisodio[1][1]);
-        /*DadosSerie d = new DadosSerie(NomeEpisodio);
+
+    }
+
+    public void EnviarDadosSerie() {
+        /*  System.out.println("sai?" + NomeEpisodio[1][1]);
+         DadosSerie d = new DadosSerie(NomeEpisodio);
          d.setNomeEpisodio(NomeEpisodio);
          Socket cliente = new Socket("127.0.0.1", 12345);
          System.out.println("O cliente se conectou ao servidor!");
@@ -254,7 +369,6 @@ public class BuscaWeb {
          cliente.close();
          //http://stackoverflow.com/questions/19217420/sending-an-object-through-a-socket-in-java
          //http://www.java2s.com/Code/Java/Network-Protocol/ServerSocketandSocketforSerializableobject.htm
-         //d.setNomeEpisodio("hahaha");
-         */
+         //d.setNomeEpisodio("hahaha");*/
     }
 }
