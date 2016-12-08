@@ -19,7 +19,7 @@ public class Loading extends javax.swing.JFrame {
             ImageIcon icon = new ImageIcon(new URL("http://www.archisevilla.org/wp-content/themes/archisevilla/images/loading.gif"));
             jLabelImagem.setIcon(icon);
         } catch (MalformedURLException ex) {
-            Logger.getLogger(BuscaNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Loading.class.getName()).log(Level.SEVERE, null, ex);
         }

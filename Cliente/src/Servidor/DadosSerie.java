@@ -1,10 +1,11 @@
 package Servidor;
 
+import java.io.FileInputStream;
 import java.io.Serializable;
 //CLIENTE
 public class DadosSerie implements Serializable{ 
     
-    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, String Categoria, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String PosterSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int DuracaoEpisodio, String[][] PosterEpisodio) {
+    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, String Categoria, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int DuracaoEpisodio) {
         this.NomeSerie = NomeSerie;
         this.AnoInicio = AnoInicio;
         this.AnoFim = AnoFim;
@@ -13,23 +14,30 @@ public class DadosSerie implements Serializable{
         this.TotalTemporadas = TotalTemporadas;
         this.TotalEpisodios = TotalEpisodios;
         this.NotaSerie = NotaSerie;
-        this.PosterSerie = PosterSerie;
         this.NomeEpisodio = NomeEpisodio;
         this.ReleaseEpisodio = ReleaseEpisodio;
         this.NotaEpisodio = NotaEpisodio;
         this.DuracaoEpisodio = DuracaoEpisodio;
-        this.PosterEpisodio = PosterEpisodio;
+    }
+    
+    
+    public DadosSerie(boolean VerificaExistencia, String NomeSerie, int TotalEpisodios, int TotalTemporadas) { //verificar se ja existe no banco
+        this.VerificaExistencia = VerificaExistencia;
+        this.NomeSerie = NomeSerie;
+        this.TotalTemporadas = TotalTemporadas;
+        this.TotalEpisodios = TotalEpisodios;
+    }
+    
+    private boolean VerificaExistencia;
+
+    public boolean isVerificaExistencia() {
+        return VerificaExistencia;
     }
 
-    public DadosSerie(String[] NomeBusca, String[] AnoBusca, String[] PosterBusca) {
-        this.NomeBusca = NomeBusca;
-        this.AnoBusca = AnoBusca;
-        this.PosterBusca = PosterBusca;
+    public void setVerificaExistencia(boolean VerificaExistencia) {
+        this.VerificaExistencia = VerificaExistencia;
     }
-
-    private String[] NomeBusca;
-    private String[] AnoBusca;
-    private String[] PosterBusca;
+    
     private String NomeSerie;
     private int AnoInicio;
     private int AnoFim;
@@ -38,37 +46,11 @@ public class DadosSerie implements Serializable{
     private int TotalTemporadas;
     private int TotalEpisodios;
     private float NotaSerie;
-    private String PosterSerie;
     private String[][] NomeEpisodio;
     private String[][] ReleaseEpisodio;
     private float [][] NotaEpisodio;
     private int DuracaoEpisodio;
-    private String[][] PosterEpisodio;
 
-    public String[] getNomeBusca() {
-        return NomeBusca;
-    }
-
-    public void setNomeBusca(String[] NomeBusca) {
-        this.NomeBusca = NomeBusca;
-    }
-
-    public String[] getAnoBusca() {
-        return AnoBusca;
-    }
-
-    public void setAnoBusca(String[] AnoBusca) {
-        this.AnoBusca = AnoBusca;
-    }
-
-    public String[] getPosterBusca() {
-        return PosterBusca;
-    }
-
-    public void setPosterBusca(String[] PosterBusca) {
-        this.PosterBusca = PosterBusca;
-    }
-    
     public String getNomeSerie() {
         return NomeSerie;
     }
@@ -133,14 +115,6 @@ public class DadosSerie implements Serializable{
         this.NotaSerie = NotaSerie;
     }
 
-    public String getPosterSerie() {
-        return PosterSerie;
-    }
-
-    public void setPosterSerie(String PosterSerie) {
-        this.PosterSerie = PosterSerie;
-    }
-
     public String[][] getNomeEpisodio() {
         return NomeEpisodio;
     }
@@ -173,11 +147,11 @@ public class DadosSerie implements Serializable{
         this.DuracaoEpisodio = DuracaoEpisodio;
     }
 
-    public String[][] getPosterEpisodio() {
-        return PosterEpisodio;
+    public String getCategoria() {
+        return Categoria;
     }
 
-    public void setPosterEpisodio(String[][] PosterEpisodio) {
-        this.PosterEpisodio = PosterEpisodio;
+    public void setCategoria(String Categoria) {
+        this.Categoria = Categoria;
     }
 }

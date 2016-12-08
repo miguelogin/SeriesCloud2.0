@@ -29,7 +29,7 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
     }
 
     private void InsereDadosTela() throws IOException, ClassNotFoundException {
-        BuscaNovaSerie BuscaNovaSerie = new BuscaNovaSerie();
+        InsereNovaSerie BuscaNovaSerie = new InsereNovaSerie();
         File ImagePoster = new File("src//images//temp//temp_poster.png");
         BufferedImage BufferedImage = ImageIO.read(ImagePoster);
         ImageIcon Poster = new ImageIcon(BufferedImage.getScaledInstance(250, 349, Image.SCALE_SMOOTH));

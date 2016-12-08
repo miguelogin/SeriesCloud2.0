@@ -1,44 +1,55 @@
 package Servidor;
 
+import java.io.FileInputStream;
 import java.io.Serializable;
 //CLIENTE
-public class DadosSerie implements Serializable{
-
-    public DadosSerie(String NomeEpisodio[][]) {
-        this.NomeEpisodio = NomeEpisodio;
-    }
+public class DadosSerie implements Serializable{ 
     
-    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, int Generos, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String PosterSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int[][] DuracaoEpisodio, String PosterEpisodio) {
+    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, String Categoria, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int DuracaoEpisodio) {
         this.NomeSerie = NomeSerie;
         this.AnoInicio = AnoInicio;
         this.AnoFim = AnoFim;
         this.Sinopse = Sinopse;
-        this.Generos = Generos;
+        this.Categoria = Categoria;
         this.TotalTemporadas = TotalTemporadas;
         this.TotalEpisodios = TotalEpisodios;
         this.NotaSerie = NotaSerie;
-        this.PosterSerie = PosterSerie;
         this.NomeEpisodio = NomeEpisodio;
         this.ReleaseEpisodio = ReleaseEpisodio;
         this.NotaEpisodio = NotaEpisodio;
         this.DuracaoEpisodio = DuracaoEpisodio;
-        this.PosterEpisodio = PosterEpisodio;
+    }
+    
+    
+    public DadosSerie(boolean VerificaExistencia, String NomeSerie, int TotalEpisodios, int TotalTemporadas) { //verificar se ja existe no banco
+        this.VerificaExistencia = VerificaExistencia;
+        this.NomeSerie = NomeSerie;
+        this.TotalTemporadas = TotalTemporadas;
+        this.TotalEpisodios = TotalEpisodios;
+    }
+    
+    private boolean VerificaExistencia;
+
+    public boolean isVerificaExistencia() {
+        return VerificaExistencia;
     }
 
+    public void setVerificaExistencia(boolean VerificaExistencia) {
+        this.VerificaExistencia = VerificaExistencia;
+    }
+    
     private String NomeSerie;
     private int AnoInicio;
     private int AnoFim;
     private String Sinopse;
-    private int Generos;
+    private String Categoria;
     private int TotalTemporadas;
     private int TotalEpisodios;
     private float NotaSerie;
-    private String PosterSerie;
     private String[][] NomeEpisodio;
     private String[][] ReleaseEpisodio;
     private float [][] NotaEpisodio;
-    private int [][] DuracaoEpisodio;
-    private String PosterEpisodio;
+    private int DuracaoEpisodio;
 
     public String getNomeSerie() {
         return NomeSerie;
@@ -72,12 +83,12 @@ public class DadosSerie implements Serializable{
         this.Sinopse = Sinopse;
     }
 
-    public int getGeneros() {
-        return Generos;
+    public String getGeneros() {
+        return Categoria;
     }
 
-    public void setGeneros(int Generos) {
-        this.Generos = Generos;
+    public void setGeneros(String Generos) {
+        this.Categoria = Generos;
     }
 
     public int getTotalTemporadas() {
@@ -104,14 +115,6 @@ public class DadosSerie implements Serializable{
         this.NotaSerie = NotaSerie;
     }
 
-    public String getPosterSerie() {
-        return PosterSerie;
-    }
-
-    public void setPosterSerie(String PosterSerie) {
-        this.PosterSerie = PosterSerie;
-    }
-
     public String[][] getNomeEpisodio() {
         return NomeEpisodio;
     }
@@ -136,19 +139,19 @@ public class DadosSerie implements Serializable{
         this.NotaEpisodio = NotaEpisodio;
     }
 
-    public int[][] getDuracaoEpisodio() {
+    public int getDuracaoEpisodio() {
         return DuracaoEpisodio;
     }
 
-    public void setDuracaoEpisodio(int[][] DuracaoEpisodio) {
+    public void setDuracaoEpisodio(int DuracaoEpisodio) {
         this.DuracaoEpisodio = DuracaoEpisodio;
     }
 
-    public String getPosterEpisodio() {
-        return PosterEpisodio;
+    public String getCategoria() {
+        return Categoria;
     }
 
-    public void setPosterEpisodio(String PosterEpisodio) {
-        this.PosterEpisodio = PosterEpisodio;
+    public void setCategoria(String Categoria) {
+        this.Categoria = Categoria;
     }
 }

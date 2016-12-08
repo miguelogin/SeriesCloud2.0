@@ -1,7 +1,10 @@
 package Servidor;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -14,6 +17,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import javax.imageio.ImageIO;
 
 public class BuscaWeb {
 
@@ -34,8 +38,8 @@ public class BuscaWeb {
     private int QuatidadeCategorias;
     private int[] AnoInicio = new int[11];
     private int[] AnoFim = new int[11];
-    private String[] PosterSerie = new String[11];
-    private String[][] PosterEpisodio;
+    private String[] UrlPosterSerie = new String[11];
+    private String[][] UrlPosterEpisodio;
     private int DuracaoEpisodio;
     private String[] Categoria;
     private String SinopseSerie;
@@ -44,6 +48,10 @@ public class BuscaWeb {
     private int TotalEpisodios;
     private int WatchTimeDias;
     private int WatchTimeHoras;
+    private Socket servidor = new Socket("127.0.0.1", 12345);
+    ObjectOutputStream ObjectOutputStream;
+    
+    private int MaiorNumeroEpisodiosPorTemporada;
 
     private int id;
     private String[] TotalEpisodiosTemporada;
@@ -69,7 +77,7 @@ public class BuscaWeb {
     }
 
     public String[] getPosterSerie() {
-        return PosterSerie;
+        return UrlPosterSerie;
     }
 
     public boolean isSemResultados() {
@@ -139,10 +147,9 @@ public class BuscaWeb {
                         AnoFim[x] = Integer.parseInt(AnoBusca[x].substring(5, 9));
                     }
                     //Separa o URL do poster
-                    PosterSerie[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"Poster\":\"") + 10, ResultadoSplitado[x].indexOf("\"}"));
+                    UrlPosterSerie[x] = ResultadoSplitado[x].substring(ResultadoSplitado[x].indexOf("\"Poster\":\"") + 10, ResultadoSplitado[x].indexOf("\"}"));
                     NumeroTotalResultados++;
                 }
-                DadosSerie DadosSerie = new DadosSerie(NomeBusca, AnoBusca, PosterSerie);
             } catch (Exception e) { //se cair nesse catch quer dizer que a pesquisa não retorna mais de 10 resultados
                 if (NumeroTotalResultados == 0) {
                     SemResultados = true;
@@ -204,10 +211,11 @@ public class BuscaWeb {
         System.err.println("! INICIANDO A CAPTURA DE DADOS DOS EPISÓDIOS! ");
         //////////////////////////////////CAPTURA DADOS DOS EPISÓDIOS////////////////////////////////////////////////
         TotalEpisodios = 0;
-        int MaiorNumeroEpisodiosPorTemporada = 0;
+        MaiorNumeroEpisodiosPorTemporada = 0;
         ///////////PEGA ALGUNS DADOS COMO O MAIOR NUMERO DE EPISÓDIOS POR TEMPORADA PRA DAIR PODER COMEÇAR A ARMAZENAR OS EPISÓDIOS EM UM ARRAY
         for (int xTemp = 1; xTemp <= TotalTemporadas; xTemp++) {
-            URL URLEpisodio = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&type=series&y=" + Ano + "&Season=" + xTemp);
+            try{
+                URL URLEpisodio = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&type=series&y=" + Ano + "&Season=" + xTemp);
             if (xTemp == 1) {
                 System.out.println("BUSCA EPISÓDIOS DE " + NomeBusca + " - " + URLEpisodio);
             }
@@ -224,8 +232,21 @@ public class BuscaWeb {
             if (Integer.parseInt(TotalEpisodiosTemporada) > MaiorNumeroEpisodiosPorTemporada) {
                 MaiorNumeroEpisodiosPorTemporada = Integer.parseInt(TotalEpisodiosTemporada);
             }
+            }catch(Exception e){
+                System.out.println("ih carai n achei o ep");
+            }
         }
-
+        
+////////////////////////////////////////////////////////////////////////////
+        DadosSerie VerificaExistencia = new DadosSerie(true, NomeBusca, TotalEpisodios, TotalTemporadas);
+        System.out.println("O cliente se conectou ao servidor! Verificando existência da série");
+        ObjectOutputStream = new ObjectOutputStream(servidor.getOutputStream());
+        ObjectOutputStream.writeObject(VerificaExistencia);
+        ObjectOutputStream.close();
+        servidor.close();
+        //ao retortnar
+        VerificaExistencia.setVerificaExistencia(false);
+/////////////////////////////////////////////////////////
         WatchTimeDias = (((TotalEpisodios * DuracaoEpisodio/*totalminutos*/) / 60/*horas*/) / 24/*dias*/);
         WatchTimeHoras = (((TotalEpisodios * DuracaoEpisodio/*totalminutos*/) / 60/*horas*/) - (WatchTimeDias * 24));
         System.err.println(WatchTimeDias + " dias " + WatchTimeHoras + " horas para concluir");
@@ -235,6 +256,7 @@ public class BuscaWeb {
         NotaEpisodio = new float[TotalTemporadas + 1][MaiorNumeroEpisodiosPorTemporada + 1];
         TotalEpisodiosTemporada = new String[MaiorNumeroEpisodiosPorTemporada];
         for (int xTemp = 1; xTemp <= TotalTemporadas; xTemp++) {//for das temporadas
+            try{
             URL URLEpisodio = new URL("http://www.omdbapi.com/?t=" + TermoBusca + "&y=" + Ano + "&Season=" + xTemp);
             URLConnection spoofEpisodio = URLEpisodio.openConnection();
             //Spoof the connection so we look like a web browser
@@ -260,19 +282,21 @@ public class BuscaWeb {
                 //SE CHEGAR A ENTRAR AQUI É POR ERRO NO BANCO DE DADOS DO OMDB TIPO TEM APENAS O EPISÓDIO 1 E 5 REGISTRADOS (FALTANDO 2,3,4);
                 //O NOSSO PROGRAMA VAI ARMAZER ENTÃO APENAS OS EPISÓDIOS 1 E 5, SENDO O EPISÓDIO 1 O 1ª EPISÓDIO DA TEMPORADA E O 5 O 2º
             }
+            }catch(Exception e){
+                System.out.println("Esse OPEN API é uma merda, faltando as temporada tudo!!!");
+            }
 
-            ///////////////////////////POSTER EPISODIO
-            PosterEpisodio = new String[TotalTemporadas][MaiorNumeroEpisodiosPorTemporada];
-             DadosSerie d = new DadosSerie(NomeBusca, AnoInicio[posicaoTabela], AnoFim[posicaoTabela], SinopseSerie, Categoria[0], TotalTemporadas, TotalEpisodios, NotaSerie, PosterSerie[posicaoTabela], NomeEpisodio, ReleaseDate, NotaEpisodio, DuracaoEpisodio, PosterEpisodio);
-             Socket cliente = new Socket("127.0.0.1", 12345);
-             System.out.println("O cliente se conectou ao servidor!");
-             ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(cliente.getOutputStream());
-             ObjectOutputStream.writeObject(d);
-             ObjectOutputStream.close();
-             cliente.close();
+            ///////////////////////////POSTER EPISODIO URLS
+            UrlPosterEpisodio = new String[TotalTemporadas][MaiorNumeroEpisodiosPorTemporada];
+
         }
-
-        BaixarImagemSerie();
+        DadosSerie d = new DadosSerie(NomeBusca, AnoInicio[posicaoTabela-1], AnoFim[posicaoTabela-1], SinopseSerie, Categoria[0], TotalTemporadas, TotalEpisodios, NotaSerie, NomeEpisodio, ReleaseDate, NotaEpisodio, DuracaoEpisodio);
+        servidor = new Socket("127.0.0.1", 12345);
+        System.out.println("O cliente se conectou ao servidor!");
+        ObjectOutputStream = new ObjectOutputStream(servidor.getOutputStream());
+        ObjectOutputStream.writeObject(d);
+        ObjectOutputStream.close();
+        servidor.close();
     }
 
     public void DadosTemporarios(String NomeBusca, int PosicaoTabela) {
@@ -320,41 +344,6 @@ public class BuscaWeb {
         System.err.println(SinopseSerie);
         id = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"id\":") + 5, ResultadoSerie.indexOf(",\"backdrop_path")));
         System.err.println("ID=" + id);
-    }
-
-    public void BaixarImagemSerie() throws IOException {
-        for (int xTemp = 1; xTemp <= TotalTemporadas; xTemp++) {
-            System.out.println("**" + TotalEpisodiosTemporada[xTemp]);
-            for (int xEp = 1; xEp <= Integer.parseInt(TotalEpisodiosTemporada[xTemp]); xEp++) {
-                try {
-                    URL IDEpisode = new URL("http://api.themoviedb.org/3/tv/" + id + "/season/+" + xTemp + "/episode/" + xEp + "?api_key=5544cda46810347ff08bf66491167824&language=pt-BR");
-                    URLConnection spoofEpisodio = IDEpisode.openConnection();
-                    //Spoof the connection so we look like a web browser
-                    spoofEpisodio.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
-                    BufferedReader inEpisodio = new BufferedReader(new InputStreamReader(spoofEpisodio.getInputStream()));
-                    //Loop through every line in the source
-
-                    String ResultadoEpisodio = inEpisodio.readLine();
-                    String ImagePath = ResultadoEpisodio.substring(ResultadoEpisodio.indexOf("still_path\":\"") + 13, ResultadoEpisodio.indexOf("\",\"vote_average"));
-                    URL PosterEpisodio = new URL("http://image.tmdb.org/t/p/w300/" + ImagePath);
-
-                    InputStream is = PosterEpisodio.openStream();
-                    OutputStream os = new FileOutputStream("src//images//temp//temp_temporada_" + xTemp + "_episodio_" + xEp + ".jpg");
-                    byte[] b = new byte[2048];
-                    int length;
-
-                    while ((length = is.read(b)) != -1) {
-                        os.write(b, 0, length);
-                    }
-
-                    is.close();
-                    os.close();
-                } catch (Exception e) {
-                    System.out.println("O episódio n existe");
-                }
-            }
-        }
-
     }
 
     public void EnviarDadosSerie() {

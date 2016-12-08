@@ -180,7 +180,7 @@ public class TelaSerie extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
          try {
             this.dispose();
-            BuscaNovaSerie BuscaNovaSerie = new BuscaNovaSerie();
+            InsereNovaSerie BuscaNovaSerie = new InsereNovaSerie();
             BuscaNovaSerie.setVisible(true);
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(TelaSerie.class.getName()).log(Level.SEVERE, null, ex);
@@ -255,7 +255,7 @@ public class TelaSerie extends javax.swing.JFrame {
     private javax.swing.JToggleButton jToggleButton3;
     // End of variables declaration//GEN-END:variables
 
-    private BuscaNovaSerie BuscaNovaSerie() {
+    private InsereNovaSerie BuscaNovaSerie() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
