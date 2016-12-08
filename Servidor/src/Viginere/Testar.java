@@ -5,6 +5,8 @@
  */
 package Viginere;
 
+import Servidor.CodViginere;
+
 /**
  *
  * @author Cezar Vasconcelos
@@ -13,7 +15,7 @@ public class Testar {
 
     public static void main(String[] args) {
         CodViginere cv = new CodViginere("fq)vv", "CLOUDSERIES");
-        //cv.cifrar();
+        cv.cifrar();
         cv.decifrar();
     }
 }
