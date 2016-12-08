@@ -58,17 +58,11 @@ public class CodViginere {
         }
         this.resultado = cifrado;
 
-        System.out.println(this.mensagem);
-        System.out.println(this.chave);
-        System.out.println(cifrado);
-
         for (int i = 0; i < cifrado.length; i++) {
             retorno += cifrado[i];
         }
 
-        for (int k = 0; k < 96; k++) {
-            System.out.println(this.matriz[k]);
-        }
+       System.out.println(""+retorno);
 
         return retorno;
     }
@@ -112,4 +106,43 @@ public class CodViginere {
         this.resultado = decifrado;
         return retorno;
     }
+    public class GerarMatriz {
+
+    public char[][] gerarMatriz() {
+        int contador;
+        Alfabeto g = new Alfabeto();
+        char abcTemp[] = g.gerarAlfabeto();
+        char abc[] = new char[abcTemp.length * 2];
+
+        for (int c = 0; c < 96; c++) {
+            abc[c] = abcTemp[c];
+            abc[c + 96] = abcTemp[c];
+        }
+
+        char[][] matriz = new char[96][96];
+
+        for (int i = 0; i < 96; i++) {
+            contador = 0;
+
+            for (int j = 0; j < 96; j++) {
+                matriz[i][j] = abc[contador + i];
+                contador++;
+            }
+        }
+        return matriz;
+    }
+}
+
+    public class Alfabeto {
+
+    
+    public char[] gerarAlfabeto() {
+        char[] abc = new char[96];
+
+        for (int i = 32; i <= 127; i++) {
+            abc[i - 32] = (char) i;
+        }
+        return abc;
+    }
+}
 }

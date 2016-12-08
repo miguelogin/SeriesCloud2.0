@@ -12,8 +12,8 @@ package Viginere;
 public class Testar {
 
     public static void main(String[] args) {
-        CodViginere cv = new CodViginere("rq{s!of,p~", "OLAR");
-        cv.cifrar();
+        CodViginere cv = new CodViginere("fq)vv", "CLOUDSERIES");
+        //cv.cifrar();
         cv.decifrar();
     }
 }
