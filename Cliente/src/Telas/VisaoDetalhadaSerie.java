@@ -1,54 +1,186 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Telas;
 
+import Servidor.BuscaWeb;
+import Servidor.BuscaWebEspecifica;
+import Servidor.DadosCadastro;
+import Servidor.DadosSerie;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-/**
- *
- * @author migue_000
- */
 public class VisaoDetalhadaSerie extends javax.swing.JFrame {
 
-    /**
-     * Creates new form VisaoDetalhadaSerie
-     */
-    public VisaoDetalhadaSerie() throws IOException, ClassNotFoundException {
-        InsereDadosTela();
+    public VisaoDetalhadaSerie(String NomeSerie, int PaginaBusca, int posicao, BuscaWeb BuscaWeb, BuscaWebEspecifica BuscaWebEspecifica, String ipServidor, String ip) throws IOException, ClassNotFoundException, ParseException {
         initComponents();
+        this.ipServidor = ipServidor;
+        this.ip = ip;
+        this.BuscaWeb = BuscaWeb;
+        this.BuscaWebEspecifica = BuscaWebEspecifica;
+        File arquivoBackupPesquisa = new File("src/backupPesquisa.txt");
+        try {
+            FileWriter arquivoWriter = new FileWriter(arquivoBackupPesquisa, true);
+            PrintWriter escrever = new PrintWriter(arquivoWriter);
+            escrever.println(NomeSerie + "#" + PaginaBusca);
+            arquivoWriter.close();
+        } catch (Exception ex) {
+            System.err.println("Não consegui escrever o arquivo bakcupPesquisa.txt");
+        }
+        arquivoBackupPesquisa.deleteOnExit();
+
+        InsereDadosTela(posicao, BuscaWeb, BuscaWebEspecifica, ipServidor, ip);
     }
 
-    private void InsereDadosTela() throws IOException, ClassNotFoundException {
-        InsereNovaSerie BuscaNovaSerie = new InsereNovaSerie();
+    private String ipServidor;
+    private String ip;
+    private BuscaWeb BuscaWeb;
+    private BuscaWebEspecifica BuscaWebEspecifica;
+    private DadosSerie DadosSerie;
+
+    private void InsereDadosTela(int posicao, BuscaWeb BuscaWeb, BuscaWebEspecifica BuscaWebEspecifica, String ipServidor, String ip) throws IOException, ClassNotFoundException, ParseException {
         File ImagePoster = new File("src//images//temp//temp_poster.png");
         BufferedImage BufferedImage = ImageIO.read(ImagePoster);
         ImageIcon Poster = new ImageIcon(BufferedImage.getScaledInstance(250, 349, Image.SCALE_SMOOTH));
         jLabelPosterSerie.setIcon(Poster);
+        jLabelNomeSerie.setText(BuscaWebEspecifica.getNomeSerie());
+        System.err.println(BuscaWebEspecifica.getNotaSerie());
+        if (BuscaWebEspecifica.getNotaSerie() <= 1) {
+            ImageIcon estrelas_1 = new ImageIcon("src/images/estrelas_nota_1.png");
+            jLabelNotaSerie.setIcon(estrelas_1);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 1 && BuscaWebEspecifica.getNotaSerie() <= 2) {
+            ImageIcon estrelas_2 = new ImageIcon("src/images/estrelas_nota_2.png");
+            jLabelNotaSerie.setIcon(estrelas_2);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 2 && BuscaWebEspecifica.getNotaSerie() <= 3) {
+            ImageIcon estrelas_3 = new ImageIcon("src/images/estrelas_nota_3.png");
+            jLabelNotaSerie.setIcon(estrelas_3);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 3 && BuscaWebEspecifica.getNotaSerie() <= 4) {
+            ImageIcon estrelas_4 = new ImageIcon("src/images/estrelas_nota_4.png");
+            jLabelNotaSerie.setIcon(estrelas_4);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 4 && BuscaWebEspecifica.getNotaSerie() <= 5) {
+            ImageIcon estrelas_5 = new ImageIcon("src/images/estrelas_nota_5.png");
+            jLabelNotaSerie.setIcon(estrelas_5);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 5 && BuscaWebEspecifica.getNotaSerie() <= 6) {
+            ImageIcon estrelas_6 = new ImageIcon("src/images/estrelas_nota_6.png");
+            jLabelNotaSerie.setIcon(estrelas_6);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 6 && BuscaWebEspecifica.getNotaSerie() <= 7) {
+            ImageIcon estrelas_7 = new ImageIcon("src/images/estrelas_nota_7.png");
+            jLabelNotaSerie.setIcon(estrelas_7);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 7 && BuscaWebEspecifica.getNotaSerie() <= 8) {
+            ImageIcon estrelas_8 = new ImageIcon("src/images/estrelas_nota_8.png");
+            jLabelNotaSerie.setIcon(estrelas_8);
+        } else if (BuscaWebEspecifica.getNotaSerie() > 8 && BuscaWebEspecifica.getNotaSerie() <= 9) {
+            ImageIcon estrelas_9 = new ImageIcon("src/images/estrelas_nota_9.png");
+            jLabelNotaSerie.setIcon(estrelas_9);
+        } else {
+            ImageIcon estrelas_10 = new ImageIcon("src/images/estrelas_nota_10.png");
+            jLabelNotaSerie.setIcon(estrelas_10);
+        }
+
+        if (BuscaWebEspecifica.getQuatidadeCategorias() == 0) {
+            jLabelCategoriasSerie.setText(BuscaWebEspecifica.getCategoria()[0]);
+        } else {
+            jLabelCategoriasSerie.setText(BuscaWebEspecifica.getCategoria()[0] + " - " + BuscaWebEspecifica.getCategoria()[1]);
+        }
+        if (BuscaWeb.getAnoFim()[posicao] == 0) {
+            jLabelAnoSerie.setText(String.valueOf(BuscaWeb.getAnoInicio()[posicao]));
+        } else if (BuscaWeb.getAnoFim()[posicao] == 1) {
+            jLabelAnoSerie.setText(String.valueOf(BuscaWeb.getAnoInicio()[posicao] + " - Continuando"));
+        } else {
+            jLabelAnoSerie.setText(String.valueOf(BuscaWeb.getAnoInicio()[posicao]) + "-" + String.valueOf(BuscaWeb.getAnoFim()[posicao]));
+        }
+        jLabelTotalEpisodios.setText(String.valueOf(BuscaWebEspecifica.getTotalEpisodios()) + " episódios");
+        jLabelWatchTime.setText(String.valueOf(BuscaWebEspecifica.getWatchTimeDias()) + " dias e " + String.valueOf(BuscaWebEspecifica.getWatchTimeHoras()) + " horas para concluir esta série");
+        for (int x = 1; x <= BuscaWebEspecifica.getTotalTemporadas(); x++) {
+            jComboBoxTemporada.addItem("Temporada " + x);
+        }
+        jTextPaneSinopse.setText(BuscaWebEspecifica.getSinopseSerie());
+        jTextPaneSinopse.setCaretPosition(0);
+
+        //DEFINE DADOS DO VISUALIZADOS DE EPISÓDIOS
+        jLabelSeasonEpisode.setText("S01E01");
+        jLabelNomeEpisodio.setText(BuscaWebEspecifica.getNomeEpisodio()[1][1]);
+
+        SimpleDateFormat Americana = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat Brasileira = new SimpleDateFormat("dd-MM-yyyy");
+        Date dataAmericana = Americana.parse(BuscaWebEspecifica.getReleaseDate()[1][1]);
+
+        jLabelDuracaoData.setText(String.valueOf(BuscaWebEspecifica.getDuracaoEpisodio()) + " min - " + Brasileira.format(dataAmericana));
+        System.err.println(BuscaWebEspecifica.getNotaEpisodio()[1][1]);
+        if (BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 1) {
+            ImageIcon estrelas_1 = new ImageIcon("src/images/estrelas_nota_1.png");
+            jLabelNotaEpisodio.setIcon(estrelas_1);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 1 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 2) {
+            ImageIcon estrelas_2 = new ImageIcon("src/images/estrelas_nota_2.png");
+            jLabelNotaEpisodio.setIcon(estrelas_2);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 2 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 3) {
+            ImageIcon estrelas_3 = new ImageIcon("src/images/estrelas_nota_3.png");
+            jLabelNotaEpisodio.setIcon(estrelas_3);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 3 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 4) {
+            ImageIcon estrelas_4 = new ImageIcon("src/images/estrelas_nota_4.png");
+            jLabelNotaEpisodio.setIcon(estrelas_4);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 4 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 5) {
+            ImageIcon estrelas_5 = new ImageIcon("src/images/estrelas_nota_5.png");
+            jLabelNotaEpisodio.setIcon(estrelas_5);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 5 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 6) {
+            ImageIcon estrelas_6 = new ImageIcon("src/images/estrelas_nota_6.png");
+            jLabelNotaEpisodio.setIcon(estrelas_6);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 6 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 7) {
+            ImageIcon estrelas_7 = new ImageIcon("src/images/estrelas_nota_7.png");
+            jLabelNotaEpisodio.setIcon(estrelas_7);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 7 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 8) {
+            ImageIcon estrelas_8 = new ImageIcon("src/images/estrelas_nota_8.png");
+            jLabelNotaEpisodio.setIcon(estrelas_8);
+        } else if (BuscaWebEspecifica.getNotaEpisodio()[1][1] > 8 && BuscaWebEspecifica.getNotaEpisodio()[1][1] <= 9) {
+            ImageIcon estrelas_9 = new ImageIcon("src/images/estrelas_nota_9.png");
+            jLabelNotaEpisodio.setIcon(estrelas_9);
+        } else {
+            ImageIcon estrelas_10 = new ImageIcon("src/images/estrelas_nota_10.png");
+            jLabelNotaEpisodio.setIcon(estrelas_10);
+        }
     }
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
+
+    private void RegistraSerie(BuscaWeb BuscaWeb, BuscaWebEspecifica BuscaWebEspecifica, String ipServidor, String ip) throws IOException, ClassNotFoundException, ParseException {
+        DadosSerie = new DadosSerie(BuscaWebEspecifica.getNomeSerie(), BuscaWeb.getAnoInicio()[1], BuscaWeb.getAnoFim()[1], BuscaWebEspecifica.getSinopseSerie(), BuscaWebEspecifica.getQuatidadeCategorias(), BuscaWebEspecifica.getCategoria(), BuscaWebEspecifica.getTotalTemporadas(), BuscaWebEspecifica.getTotalEpisodios(), BuscaWebEspecifica.getNotaSerie(), BuscaWebEspecifica.getNomeEpisodio(), BuscaWebEspecifica.getReleaseDate(), BuscaWebEspecifica.getNotaEpisodio(), BuscaWebEspecifica.getDuracaoEpisodio());
+        try {
+            Socket servidor = new Socket(ipServidor, 1234);
+            DataOutputStream dOut = new DataOutputStream(servidor.getOutputStream());
+            dOut.writeUTF("VerificaCadastro");
+            dOut.flush();
+            DadosCadastro DadosCadastro = new DadosCadastro(ip, jTextFieldEmail.getText(), jTextFieldLogin.getText());
+            ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(servidor.getOutputStream());
+            ObjectOutputStream.writeObject(DadosCadastro);
+            ObjectOutputStream.close();
+            servidor.close();
+            RespotaVerificaCadastro();
+        } catch (IOException ex) {
+            Logger.getLogger(Cadastrar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jScrollPaneSinopseSerie = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
+        jTextPaneSinopse = new javax.swing.JTextPane();
         jLabelNotaSerie = new javax.swing.JLabel();
+        jToggleButtonAcompanhar = new javax.swing.JToggleButton();
         jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
         jLabelPosterSerie = new javax.swing.JLabel();
         jLabelNomeSerie = new javax.swing.JLabel();
         jLabelCategoriasSerie = new javax.swing.JLabel();
@@ -56,41 +188,51 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
         jLabelTotalEpisodios = new javax.swing.JLabel();
         jLabelWatchTime = new javax.swing.JLabel();
         jComboBoxTemporada = new javax.swing.JComboBox();
-        jButton2 = new javax.swing.JButton();
+        jButtonAnteriorEpisodio = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jToggleButton3 = new javax.swing.JToggleButton();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
+        jButtonProximoEpisodio = new javax.swing.JButton();
+        jLabelDuracaoData = new javax.swing.JLabel();
+        jLabelNomeEpisodio = new javax.swing.JLabel();
+        jLabelSeasonEpisode = new javax.swing.JLabel();
+        jToggleButtonMarcarAssistido = new javax.swing.JToggleButton();
+        jLabelNotaEpisodio = new javax.swing.JLabel();
+        jLabelImagemEpisodio = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
         getContentPane().setLayout(null);
 
-        jTextPane1.setEditable(false);
-        jTextPane1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jTextPane1.setText("The Doctor is an alien Time Lord from the planet Gallifrey who travels through all of time and space in his TARDIS. He has a long list of friends and companions who have shared journeys with him. Instead of dying, the Doctor is able to “regenerate” into a new body, taking on a new personality with each regeneration. Twelve actors, plus John Hurt, have played The Doctor thus far.");
-        jTextPane1.setOpaque(false);
-        jScrollPaneSinopseSerie.setViewportView(jTextPane1);
+        jTextPaneSinopse.setEditable(false);
+        jTextPaneSinopse.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        jTextPaneSinopse.setOpaque(false);
+        jScrollPaneSinopseSerie.setViewportView(jTextPaneSinopse);
 
         getContentPane().add(jScrollPaneSinopseSerie);
-        jScrollPaneSinopseSerie.setBounds(10, 550, 250, 80);
+        jScrollPaneSinopseSerie.setBounds(10, 550, 250, 90);
 
         jLabelNotaSerie.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabelNotaSerie.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/cinco_estrelas.png"))); // NOI18N
         getContentPane().add(jLabelNotaSerie);
         jLabelNotaSerie.setBounds(10, 300, 250, 60);
 
-        jButton3.setText("< Voltar");
-        getContentPane().add(jButton3);
-        jButton3.setBounds(0, 0, 73, 23);
+        jToggleButtonAcompanhar.setText("Acompanhar");
+        jToggleButtonAcompanhar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButtonAcompanharActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jToggleButtonAcompanhar);
+        jToggleButtonAcompanhar.setBounds(10, 370, 250, 30);
 
-        jButton4.setText("Acompanhar");
-        jButton4.setBorderPainted(false);
-        getContentPane().add(jButton4);
-        jButton4.setBounds(10, 370, 250, 30);
+        jButton3.setText("< Voltar");
+        jButton3.setFocusPainted(false);
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton3);
+        jButton3.setBounds(-7, -7, 80, 30);
 
         jLabelPosterSerie.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Doctor_Who_Series_9.png"))); // NOI18N
         getContentPane().add(jLabelPosterSerie);
@@ -127,60 +269,81 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
         jLabelWatchTime.setBounds(10, 460, 300, 70);
 
         jComboBoxTemporada.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jComboBoxTemporada.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1 Temporada" }));
         getContentPane().add(jComboBoxTemporada);
         jComboBoxTemporada.setBounds(10, 510, 250, 30);
 
-        jButton2.setText("<");
-        getContentPane().add(jButton2);
-        jButton2.setBounds(280, 290, 41, 50);
+        jButtonAnteriorEpisodio.setText("<");
+        jButtonAnteriorEpisodio.setEnabled(false);
+        getContentPane().add(jButtonAnteriorEpisodio);
+        jButtonAnteriorEpisodio.setBounds(280, 290, 41, 50);
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/grey.png"))); // NOI18N
         jLabel2.setText("Print");
         getContentPane().add(jLabel2);
         jLabel2.setBounds(0, -10, 270, 690);
 
-        jButton1.setText(">");
-        getContentPane().add(jButton1);
-        jButton1.setBounds(1180, 280, 41, 50);
+        jButtonProximoEpisodio.setText(">");
+        jButtonProximoEpisodio.setEnabled(false);
+        getContentPane().add(jButtonProximoEpisodio);
+        jButtonProximoEpisodio.setBounds(1180, 280, 41, 50);
 
-        jLabel4.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel4.setText("43min - 11/11/11");
-        getContentPane().add(jLabel4);
-        jLabel4.setBounds(330, 350, 840, 29);
+        jLabelDuracaoData.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jLabelDuracaoData.setForeground(new java.awt.Color(255, 255, 255));
+        jLabelDuracaoData.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelDuracaoData.setText("43min - 11/11/11");
+        getContentPane().add(jLabelDuracaoData);
+        jLabelDuracaoData.setBounds(330, 350, 840, 29);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 48)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("The Time of The Doctor");
-        getContentPane().add(jLabel1);
-        jLabel1.setBounds(330, 270, 840, 80);
+        jLabelNomeEpisodio.setFont(new java.awt.Font("Tahoma", 1, 48)); // NOI18N
+        jLabelNomeEpisodio.setForeground(new java.awt.Color(255, 255, 255));
+        jLabelNomeEpisodio.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelNomeEpisodio.setText("Nome Episódio");
+        getContentPane().add(jLabelNomeEpisodio);
+        jLabelNomeEpisodio.setBounds(330, 270, 840, 80);
 
-        jLabel11.setFont(new java.awt.Font("Tahoma", 1, 72)); // NOI18N
-        jLabel11.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel11.setText("S10E01");
-        getContentPane().add(jLabel11);
-        jLabel11.setBounds(330, 200, 840, 70);
+        jLabelSeasonEpisode.setFont(new java.awt.Font("Tahoma", 1, 72)); // NOI18N
+        jLabelSeasonEpisode.setForeground(new java.awt.Color(255, 255, 255));
+        jLabelSeasonEpisode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelSeasonEpisode.setText("S01E01");
+        getContentPane().add(jLabelSeasonEpisode);
+        jLabelSeasonEpisode.setBounds(330, 200, 840, 70);
 
-        jToggleButton3.setText("MARCAR COMO ASSISTIDO");
-        getContentPane().add(jToggleButton3);
-        jToggleButton3.setBounds(630, 460, 230, 40);
+        jToggleButtonMarcarAssistido.setText("MARCAR COMO ASSISTIDO");
+        jToggleButtonMarcarAssistido.setEnabled(false);
+        getContentPane().add(jToggleButtonMarcarAssistido);
+        jToggleButtonMarcarAssistido.setBounds(630, 460, 230, 40);
 
-        jLabel12.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/cinco_estrelas.png"))); // NOI18N
-        getContentPane().add(jLabel12);
-        jLabel12.setBounds(330, 390, 840, 60);
+        jLabelNotaEpisodio.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelNotaEpisodio.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/cinco_estrelas.png"))); // NOI18N
+        getContentPane().add(jLabelNotaEpisodio);
+        jLabelNotaEpisodio.setBounds(330, 390, 840, 60);
 
-        jLabel13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Doctor.Who.2005.S09E12.Hell.Bent.720p.WEB-DL.DD5.1.H.264-CtrlHD.mkv_003513762.jpg"))); // NOI18N
-        jLabel13.setText("Print");
-        getContentPane().add(jLabel13);
-        jLabel13.setBounds(260, 0, 980, 640);
+        jLabelImagemEpisodio.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Doctor.Who.2005.S09E12.Hell.Bent.720p.WEB-DL.DD5.1.H.264-CtrlHD.mkv_003513762.jpg"))); // NOI18N
+        jLabelImagemEpisodio.setText("Print");
+        getContentPane().add(jLabelImagemEpisodio);
+        jLabelImagemEpisodio.setBounds(260, 0, 990, 650);
 
-        setBounds(0, 0, 1252, 677);
+        setSize(new java.awt.Dimension(1252, 677));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jToggleButtonAcompanharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonAcompanharActionPerformed
+        if (jToggleButtonAcompanhar.isSelected()) {
+            try {
+                RegistraSerie(BuscaWeb, BuscaWebEspecifica, ipServidor, ip);
+            } catch (IOException ex) {
+                Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ParseException ex) {
+                Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_jToggleButtonAcompanharActionPerformed
 
     /**
      * @param args the command line arguments
@@ -191,6 +354,7 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
+
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -208,42 +372,37 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new VisaoDetalhadaSerie().setVisible(true);
-                } catch (IOException ex) {
-                    Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButtonAnteriorEpisodio;
+    private javax.swing.JButton jButtonProximoEpisodio;
     private javax.swing.JComboBox jComboBoxTemporada;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabelAnoSerie;
     private javax.swing.JLabel jLabelCategoriasSerie;
+    private javax.swing.JLabel jLabelDuracaoData;
+    private javax.swing.JLabel jLabelImagemEpisodio;
+    private javax.swing.JLabel jLabelNomeEpisodio;
     private javax.swing.JLabel jLabelNomeSerie;
+    private javax.swing.JLabel jLabelNotaEpisodio;
     private javax.swing.JLabel jLabelNotaSerie;
-    public javax.swing.JLabel jLabelPosterSerie;
+    private javax.swing.JLabel jLabelPosterSerie;
+    private javax.swing.JLabel jLabelSeasonEpisode;
     private javax.swing.JLabel jLabelTotalEpisodios;
     private javax.swing.JLabel jLabelWatchTime;
     private javax.swing.JScrollPane jScrollPaneSinopseSerie;
-    private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JToggleButton jToggleButton3;
+    private javax.swing.JTextPane jTextPaneSinopse;
+    private javax.swing.JToggleButton jToggleButtonAcompanhar;
+    private javax.swing.JToggleButton jToggleButtonMarcarAssistido;
     // End of variables declaration//GEN-END:variables
+
+    private InsereNovaSerie BuscaNovaSerie() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

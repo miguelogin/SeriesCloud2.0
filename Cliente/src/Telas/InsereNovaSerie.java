@@ -2,7 +2,6 @@ package Telas;
 
 import static java.awt.event.KeyEvent.*;
 import Servidor.*;
-import static Telas.TelaInicial.ipServidor;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
@@ -23,6 +22,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -32,7 +32,6 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-import jdk.nashorn.internal.parser.TokenType;
 
 public class InsereNovaSerie extends javax.swing.JFrame {
 
@@ -41,6 +40,8 @@ public class InsereNovaSerie extends javax.swing.JFrame {
     private String TermoBusca;
     private boolean Local = false;
     private File arquivoBackupPesquisa = new File("src/backupPesquisa.txt");
+    private String ipServidor;
+    private String ip;
 
     public boolean isLocal() {
         return Local;
@@ -68,6 +69,8 @@ public class InsereNovaSerie extends javax.swing.JFrame {
     }
 
     public InsereNovaSerie(String login, String ipServidor, String ip) throws IOException, ClassNotFoundException {
+        this.ipServidor = ipServidor;
+        this.ip = ip;
         initComponents();
         this.setVisible(true);
         this.login = login;
@@ -86,29 +89,9 @@ public class InsereNovaSerie extends javax.swing.JFrame {
         RespotaWatchTime();
         jTableResultadoWeb.setEnabled(false);
         jTableResultadoWeb.setVisible(false);
-        if (arquivoBackupPesquisa.exists()) {
-            FileReader leitor = new FileReader(arquivoBackupPesquisa);
-            BufferedReader leitor_bufffer = new BufferedReader(leitor);
-            // a variável "linha" recebe o valor "null" quando o processo
-            // de repetição atingir o final do arquivo texto
-            String linha = null;
-            while ((linha = leitor_bufffer.readLine()) != null) {
-                String colunas[] = linha.split("#"); //lê a linha contendo a palavra e a dica, sabendo q as mesmas sao separadas pelo #
-                jTextFieldCampoBusca.setText(colunas[0]);
-                PaginaBusca = Integer.parseInt(colunas[1]);
-            }
-            leitor_bufffer.close();
-            try {
-                PesquisarSerieWeb();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            arquivoBackupPesquisa.deleteOnExit();
-        }
     }
 
     public void PesquisarSerieWeb() throws IOException, ClassNotFoundException, InterruptedException {
-        arquivoBackupPesquisa.delete();
         if (jTextFieldCampoBusca.getText().equals("")) {
             JOptionPane.showMessageDialog(this, "O campo de busca está vazio!", "Busca nula", JOptionPane.ERROR_MESSAGE);
         } else {
@@ -143,9 +126,8 @@ public class InsereNovaSerie extends javax.swing.JFrame {
                         BufferedImage BufferedImage = ImageIO.read(url);
                         PosterSerie = new ImageIcon(BufferedImage.getScaledInstance(113, 150, Image.SCALE_SMOOTH));
                     }
-                    jLabelProfilePicture.setIcon(PosterSerie);
                     //coloca os dados da série na tabela
-                    TabelaResultadoWeb.addRow(new Object[]{PosterSerie, BuscaWeb.getNomeBusca()[x], BuscaWeb.getAnoBusca()[x]});
+                    TabelaResultadoWeb.addRow(new Object[]{PosterSerie, BuscaWeb.getNomesSeriesBusca()[x], BuscaWeb.getAnosSeriesBusca()[x]});
                 }
                 if (BuscaWeb.getNumeroTotalResultados() == 10) {
                     File MaisResultadosImage = new File("src//images//mais.jpg");
@@ -180,11 +162,12 @@ public class InsereNovaSerie extends javax.swing.JFrame {
                             }
                         } else { //////////////////////////////////////////////////////////////////////////////// CLICA EM ALGUMA SÉRIE
                             try {
-                                BuscaWeb.BuscaSerieEspecifica((BuscaWeb.getNomeBusca()[jTableResultadoWeb.getSelectedRow() + 1]), BuscaWeb.getAnoInicio()[jTableResultadoWeb.getSelectedRow() + 1], jTableResultadoWeb.getSelectedRowCount() + 1);
+                                BuscaWebEspecifica BuscaWebEspecifica = new BuscaWebEspecifica();
+                                BuscaWebEspecifica.BuscaWebEspecifica((BuscaWeb.getNomesSeriesBusca()[jTableResultadoWeb.getSelectedRow() + 1]), BuscaWeb.getAnoInicio()[jTableResultadoWeb.getSelectedRow() + 1], jTableResultadoWeb.getSelectedRow()+1, ipServidor, ip);
                                 //POR ALGUM MOTIVO O BUFFERDIMAGE E O IMAGEICON N PASSAVAM VALORES PARA A OUTRA TELA
                                 //MESMO CHECANDO AQUI Q ELES N ESTAVAM NULOS. DECIDI ENTÃO BAIXAR A IMAGEM PARA UTILIZAR NA OUTRA TELA
                                 BaixarImagem(BuscaWeb.getPosterSerie()[jTableResultadoWeb.getSelectedRow() + 1], "src//images//temp//temp_poster.png");
-                                TelaSerie TelaSerie = new TelaSerie();
+                                VisaoDetalhadaSerie TelaSerie = new VisaoDetalhadaSerie(jTextFieldCampoBusca.getText(), PaginaBusca, jTableResultadoWeb.getSelectedRow()+1, BuscaWeb, BuscaWebEspecifica, ipServidor, ip);
                                 BuscaNovaSerieDispose();
                                 TelaSerie.setVisible(true);
                                 Local = true;
@@ -204,59 +187,9 @@ public class InsereNovaSerie extends javax.swing.JFrame {
                                 Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (ClassNotFoundException ex) {
                                 Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (ParseException ex) {
+                                Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                        }
-                    }
-                });
-                jTableResultadoWeb.addKeyListener(new java.awt.event.KeyAdapter() {
-                    @Override
-                    public void keyPressed(java.awt.event.KeyEvent e) {
-                        if (e.getKeyCode() == VK_ENTER) {
-                            if (jTableResultadoWeb.getSelectedRow() == BuscaWeb.getNumeroTotalResultados()) {//////// ENTER EM MAIS RESULTADOS
-                                try {
-                                    if (BuscaWeb.getNumeroTotalResultados() == 10) {
-                                        PaginaBusca++;
-                                        PesquisarSerieWeb();
-                                        jTableResultadoWeb.getSelectionModel().setSelectionInterval(0, 0);
-                                        jTableResultadoWeb.scrollRectToVisible(new Rectangle(jTableResultadoWeb.getCellRect(0, 0, true)));
-                                    }
-                                } catch (IOException ex) {
-                                    Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (ClassNotFoundException ex) {
-                                    Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            } else {
-                                try {
-                                    //////////////////////////////////////////////////////////////////////////////// ENTER EM ALGUMA SÉRIE
-                                    BuscaWeb.BuscaSerieEspecifica((BuscaWeb.getNomeBusca()[jTableResultadoWeb.getSelectedRow() + 1]), BuscaWeb.getAnoInicio()[jTableResultadoWeb.getSelectedRow() + 1], jTableResultadoWeb.getSelectedRowCount() + 1);
-                                    //POR ALGUM MOTIVO O BUFFERDIMAGE E O IMAGEICON N PASSAVAM VALORES PARA A OUTRA TELA
-                                    //MESMO CHECANDO AQUI Q ELES N ESTAVAM NULOS. DECIDI ENTÃO BAIXAR A IMAGEM PARA UTILIZAR NA OUTRA TELA
-                                    BaixarImagem(BuscaWeb.getPosterSerie()[jTableResultadoWeb.getSelectedRow() + 1], "src//images//temp//temp_poster.png");
-                                    TelaSerie TelaSerie = new TelaSerie();
-                                    BuscaNovaSerieDispose();
-                                    TelaSerie.setVisible(true);
-                                    Local = true;
-                                    try {
-                                        FileWriter arquivoWriter = new FileWriter(arquivoBackupPesquisa, true);
-                                        PrintWriter escrever = new PrintWriter(arquivoWriter);
-                                        escrever.println(jTextFieldCampoBusca.getText() + "#" + PaginaBusca);
-                                        arquivoWriter.close();
-                                        BufferedReader leitor_buffer = new BufferedReader(new FileReader("src/backupPesquisa.txt"));
-                                        while (leitor_buffer.ready()) {
-                                            String linha = leitor_buffer.readLine(); // lê até a última linha
-                                        }
-                                        leitor_buffer.close();
-                                    } catch (Exception ex) {
-                                    }
-                                } catch (IOException ex) {
-                                    Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (ClassNotFoundException ex) {
-                                    Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        } else {
                         }
                     }
                 });

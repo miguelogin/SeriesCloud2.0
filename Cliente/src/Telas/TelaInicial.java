@@ -149,7 +149,7 @@ public class TelaInicial extends javax.swing.JFrame {
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/game-shadowgun-icon.png"))); // NOI18N
         getContentPane().add(jLabel2);
-        jLabel2.setBounds(480, 150, 64, 52);
+        jLabel2.setBounds(480, 140, 64, 70);
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/abertura-melhores-series-TV-foto-citacoes-cinefilas.jpg"))); // NOI18N
         getContentPane().add(jLabel3);

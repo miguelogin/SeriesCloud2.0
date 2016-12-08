@@ -3,11 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Telas/InsereNovaSerie.java</file>
             <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Servidor/BuscaWeb.java</file>
-            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Servidor/DadosUsuario.java</file>
+            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Telas/VisaoDetalhadaSerie.java</file>
+            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Telas/Cadastrar.java</file>
             <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Telas/TelaInicial.java</file>
-            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Telas/TelaSerie.java</file>
-            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Telas/BuscaNovaSerie.java</file>
+            <file>file:/C:/Users/migue_000/Documents/GitHub/SeriesCloud2.0/Cliente/src/Servidor/BuscaWebEspecifica.java</file>
         </group>
     </open-files>
 </project-private>
