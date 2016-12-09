@@ -22,8 +22,10 @@ public class ConectaBanco {
 
     public int VerificaUsuario(DadosUsuario p) throws SQLException {
         ConectaBanco Banco = new ConectaBanco();
+        CodViginere criptografa = new CodViginere (p.getSenha());
+        String senha = criptografa.decifrar();   
         Statement stAcoesnoBanco = Banco.Conecta.createStatement();
-        ResultSet rs = stAcoesnoBanco.executeQuery("SELECT * FROM `usuario` WHERE `LOGIN` LIKE '" + p.getLogin() + "' AND `SENHA` LIKE '" + p.getSenha() + "'");
+        ResultSet rs = stAcoesnoBanco.executeQuery("SELECT * FROM `usuario` WHERE `LOGIN` LIKE '" + p.getLogin() + "' AND `SENHA` LIKE '" + senha + "'");
         int UsuarioId = 0;
         while (rs.next()) {
             UsuarioId = Integer.parseInt(rs.getString("tipo"));
@@ -39,8 +41,10 @@ public class ConectaBanco {
 
     public void CadastraUsuario(DadosCadastro p) throws SQLException {
         ConectaBanco Banco = new ConectaBanco();
+        CodViginere criptografarSenha = new CodViginere(p.getSenha());
+        String senha = criptografarSenha.cifrar();
         Statement stAcoesnoBanco = Banco.Conecta.createStatement();
-        stAcoesnoBanco.executeUpdate("INSERT INTO `usuario` (`NOME_USER`, `LOGIN`, `SENHA`, `EMAIL`, `NASCIMENTO`, `TIPO`) VALUES ('" + p.getNome() + "', '" + p.getLogin() + "', '" + p.getSenha() + "', '" + p.getEmail() + "', '" + p.getNascimento() + "', '2');");
+        stAcoesnoBanco.executeUpdate("INSERT INTO `usuario` (`NOME_USER`, `LOGIN`, `SENHA`, `EMAIL`, `NASCIMENTO`, `TIPO`) VALUES ('" + p.getNome() + "', '" + p.getLogin() + "', '" + senha + "', '" + p.getEmail() + "', '" + p.getNascimento() + "', '2');");
     }
 
     public String VerificaCadastro(DadosCadastro p) throws SQLException {
