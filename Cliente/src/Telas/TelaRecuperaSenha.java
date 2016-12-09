@@ -5,7 +5,13 @@
  */
 package Telas;
 
+import static Telas.TelaInicial.ipServidor;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,13 +26,7 @@ public class TelaRecuperaSenha extends javax.swing.JFrame {
         initComponents();
         this.setVisible(true);
     }
-    public void EmailRecupera (){
-        try{
-            
-        }catch (IOException ioe){
-            
-        }
-    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -79,7 +79,20 @@ public class TelaRecuperaSenha extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBEnviaEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBEnviaEmailActionPerformed
-        // TODO add your handling code here:
+       
+        try {
+            Socket servidor = new Socket(ipServidor, 1234);
+            DataOutputStream dOut = new DataOutputStream(servidor.getOutputStream());
+            dOut.writeUTF("RecuperaSenha");
+            dOut.flush();
+            
+            dOut.writeUTF(jTFEmailRecupera.getText());
+            dOut.close();
+            servidor.close();
+        } catch (IOException ex) {
+            Logger.getLogger(TelaRecuperaSenha.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            
     }//GEN-LAST:event_jBEnviaEmailActionPerformed
 
     /**

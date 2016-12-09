@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.mail.EmailException;
 import sun.security.provider.VerificationProvider;
 
 public class Servidor {
@@ -123,6 +124,16 @@ class TrataCliente extends Thread {
                     break;
                 }
                 inFromClient.close();
+            }else if (readUTF.equals("RecuperaSenha")){
+                EmailJava enviar = new EmailJava();
+                try {
+                    enviar.EnviarEmail(readUTF);
+                } catch (EmailException ex) {
+                    Logger.getLogger(TrataCliente.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }else if (readUTF.equals("TrocaSenha")){
+                ConectaBanco CBD = new ConectaBanco();
+                
             }
 
             /*

@@ -15,21 +15,18 @@ import org.apache.commons.mail.SimpleEmail;
  * @author Cezar Vasconcelos
  */
 public class EmailJava {
-     public static void main(String[] args) throws EmailException {
-         EmailJava email = new EmailJava();
-         email.EnviarEmail();
-     }
+     
 
-   public void EnviarEmail () throws EmailException{
+   public void EnviarEmail (String Email) throws EmailException{
        Email email = new SimpleEmail();
        email.setHostName("smtp.googlemail.com");
        email.setSmtpPort(465);
        email.setAuthenticator(new DefaultAuthenticator("seriescloudrecupera@gmail.com", "recuper@"));
        email.setSSLOnConnect(true);
-       email.setFrom("seriescloudrecupera@gmail.com");
-       email.setSubject("TestMail");
-       email.setMsg("ESSA PORRA VAI FUNCIONAR?");
-       email.addTo("crolys@gmail.com");
+       email.setFrom("SerisCloud@gmail.com");
+       email.setSubject("Recuperação de Senha");
+       email.setMsg("Sua nova senha é 123456789, entre com sua nova senha e mude assim que possível.");
+       email.addTo(Email);
        email.send();
     }
 
