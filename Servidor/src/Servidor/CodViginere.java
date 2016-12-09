@@ -19,7 +19,8 @@ public class CodViginere {
     char matriz[][];
     char[] texto;
 
-    public CodViginere(String msg, String chave) {
+    public CodViginere(String msg) {
+        String chave = "CLOUDSERIES";
         msg = RetiraAcento(msg);
         this.mensagem = msg.toCharArray();
         char[] chaveTemp = chave.toCharArray();

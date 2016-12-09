@@ -14,8 +14,9 @@ import Servidor.CodViginere;
 public class Testar {
 
     public static void main(String[] args) {
-        CodViginere cv = new CodViginere("fq)vv", "CLOUDSERIES");
+        CodViginere cv = new CodViginere("p56J)?");
         cv.cifrar();
-        cv.decifrar();
+        String senha = cv.decifrar();
+        System.out.print(""+senha);
     }
 }
