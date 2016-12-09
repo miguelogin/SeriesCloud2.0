@@ -22,8 +22,8 @@ public class ConectaBanco {
 
     public int VerificaUsuario(DadosUsuario p) throws SQLException {
         ConectaBanco Banco = new ConectaBanco();
-        CodViginere criptografa = new CodViginere (p.getSenha());
-        String senha = criptografa.decifrar();   
+        CodViginere criptografa = new CodViginere(p.getSenha());
+        String senha = criptografa.decifrar();
         Statement stAcoesnoBanco = Banco.Conecta.createStatement();
         ResultSet rs = stAcoesnoBanco.executeQuery("SELECT * FROM `usuario` WHERE `LOGIN` LIKE '" + p.getLogin() + "' AND `SENHA` LIKE '" + senha + "'");
         int UsuarioId = 0;
@@ -128,7 +128,14 @@ public class ConectaBanco {
     public void InserirSerie(DadosSerie p) throws SQLException {
         ConectaBanco Banco = new ConectaBanco();
         Statement stAcoesnoBanco = Banco.Conecta.createStatement();
-        stAcoesnoBanco.executeUpdate("INSERT INTO `serie` (`ID_SERIE`, `NOME`, `CATEGORIA`, `N_TEMPORADAS`, `N_EPISODIOS`, `DT_INICIO`, `DT_FIM`, `SINOPSE`) VALUES (NULL, '" + p.getNomeSerie() + "', '" + p.getCategoria() + "', '" + p.getTotalTemporadas() + "', '" + p.getTotalEpisodios() + "', '" + p.getAnoInicio() + "', '" + p.getAnoFim() + "', '" + p.getSinopse() + "');");
+        ResultSet rs = stAcoesnoBanco.executeQuery("SELECT * FROM `serie` WHERE `NOME` LIKE '" + p.getNomeSerie() + "' AND `DT_INICIO` LIKE'" + p.getAnoInicio() + "'");
+        if(rs.next()){//se tem no banco só da um update senao insere
+            int id = rs.getInt("id_serie");
+            stAcoesnoBanco.executeUpdate("UPDATE `serie` SET `N_TEMPORADAS`="+p.getTotalTemporadas()+",`N_EPISODIOS`="+p.getTotalEpisodios()+",`DT_FIM`="+p.getAnoFim()+" WHERE `ID_SERIE` LIKE "+id+";");
+        }else{
+            stAcoesnoBanco.executeUpdate("INSERT INTO `serie` (`ID_SERIE`, `NOME`, `CATEGORIA`, `N_TEMPORADAS`, `N_EPISODIOS`, `DURACAO`, `DT_INICIO`, `DT_FIM`, `SINOPSE`) VALUES (NULL, '" + p.getNomeSerie() + "', '" + p.getCategoria() + "', '" + p.getTotalTemporadas() + "', '" + p.getTotalEpisodios() + "', '" + p.getDuracaoEpisodio() + "', '" + p.getAnoInicio() + "', '" + p.getAnoFim() + "', '" + p.getSinopse() + "');");
+        }
+        
     }
 
     public void InserirEpisodio(DadosSerie p) throws SQLException {

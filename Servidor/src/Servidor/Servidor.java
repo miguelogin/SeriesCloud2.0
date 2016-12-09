@@ -86,14 +86,14 @@ class TrataCliente extends Thread {
                 while ((DadosCadastro = (DadosCadastro) inFromClient.readObject()) != null) {
                     String verificados = CBD.VerificaCadastro(DadosCadastro);
                     String[] verificadosSplitado = verificados.split("#");
-                    if(verificadosSplitado[0].equals("tem")){
+                    if (verificadosSplitado[0].equals("tem")) {
                         DadosCadastro.setExisteLogin(true);
-                    }else{
+                    } else {
                         DadosCadastro.setExisteLogin(false);
                     }
-                    if(verificadosSplitado[1].equals("tem")){
+                    if (verificadosSplitado[1].equals("tem")) {
                         DadosCadastro.setExisteEmail(true);
-                    }else{
+                    } else {
                         DadosCadastro.setExisteEmail(false);
                     }
                     //envia a reposta para o cliente
@@ -105,7 +105,7 @@ class TrataCliente extends Thread {
                     break;
                 }
                 inFromClient.close();
-            } else if(readUTF.equals("Cadastro")){
+            } else if (readUTF.equals("Cadastro")) {
                 ConectaBanco CBD = new ConectaBanco();
                 ObjectInputStream inFromClient = new ObjectInputStream(cliente.getInputStream());
                 DadosCadastro DadosCadastro;
@@ -114,29 +114,12 @@ class TrataCliente extends Thread {
                     break;
                 }
                 inFromClient.close();
-            }else if (readUTF.equals("RegistrarSerie")) {
+            } else if (readUTF.equals("RegistrarSerie")) {
                 ConectaBanco CBD = new ConectaBanco();
                 ObjectInputStream inFromClient = new ObjectInputStream(cliente.getInputStream());
-                DadosCadastro DadosCadastro;
-                while ((DadosCadastro = (DadosCadastro) inFromClient.readObject()) != null) {
-                    String verificados = CBD.VerificaCadastro(DadosCadastro);
-                    String[] verificadosSplitado = verificados.split("#");
-                    if(verificadosSplitado[0].equals("tem")){
-                        DadosCadastro.setExisteLogin(true);
-                    }else{
-                        DadosCadastro.setExisteLogin(false);
-                    }
-                    if(verificadosSplitado[1].equals("tem")){
-                        DadosCadastro.setExisteEmail(true);
-                    }else{
-                        DadosCadastro.setExisteEmail(false);
-                    }
-                    //envia a reposta para o cliente
-                    Socket cliente = new Socket(DadosCadastro.getIp(), 12345);
-                    ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(cliente.getOutputStream());
-                    ObjectOutputStream.writeObject(DadosCadastro);
-                    ObjectOutputStream.close();
-                    cliente.close();
+                DadosSerie DadosSerie;
+                while ((DadosSerie = (DadosSerie) inFromClient.readObject()) != null) {
+                    CBD.InserirSerie(DadosSerie);
                     break;
                 }
                 inFromClient.close();

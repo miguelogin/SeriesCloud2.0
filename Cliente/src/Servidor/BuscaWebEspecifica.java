@@ -78,7 +78,10 @@ public class BuscaWebEspecifica {
     public float[][] getNotaEpisodio() {
         return NotaEpisodio;
     }
-    
+
+    public String[] getTotalEpisodiosTemporada() {
+        return TotalEpisodiosTemporada;
+    }
 
     public void BuscaWebEspecifica(String NomeSerie, int Ano, int posicao, String ipServidor, String ip) throws IOException, ClassNotFoundException {
         this.NomeSerie = NomeSerie;
@@ -121,7 +124,11 @@ public class BuscaWebEspecifica {
         System.out.println(TotalTemporadas);
 
         //Tempo de Duração em minutos (fazer x nº de episódios x por temporada nº de temporadas 
-        DuracaoEpisodio = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"Runtime\":\"") + 11, ResultadoSerie.indexOf(" min\",")));
+        try {
+            DuracaoEpisodio = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"Runtime\":\"") + 11, ResultadoSerie.indexOf(" min\",")));
+        } catch (Exception e) {
+            DuracaoEpisodio = 1;
+        }
         System.out.println(DuracaoEpisodio);
 
         ////////////////capta alguma tradução de sinopse se existir

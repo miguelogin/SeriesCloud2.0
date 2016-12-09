@@ -89,6 +89,25 @@ public class InsereNovaSerie extends javax.swing.JFrame {
         RespotaWatchTime();
         jTableResultadoWeb.setEnabled(false);
         jTableResultadoWeb.setVisible(false);
+        if (arquivoBackupPesquisa.exists()) {
+            FileReader leitor = new FileReader(arquivoBackupPesquisa);
+            BufferedReader leitor_bufffer = new BufferedReader(leitor);
+                // a variável "linha" recebe o valor "null" quando o processo
+            // de repetição atingir o final do arquivo texto
+            String linha = null;
+            while ((linha = leitor_bufffer.readLine()) != null) {
+                String colunas[] = linha.split("#"); //lê a linha contendo a palavra e a dica, sabendo q as mesmas sao separadas pelo #
+                jTextFieldCampoBusca.setText(colunas[0]);
+                PaginaBusca = Integer.parseInt(colunas[1]);
+            }
+            leitor_bufffer.close();
+            try {
+                PesquisarSerieWeb();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            arquivoBackupPesquisa.delete();
+        }
     }
 
     public void PesquisarSerieWeb() throws IOException, ClassNotFoundException, InterruptedException {
@@ -167,22 +186,10 @@ public class InsereNovaSerie extends javax.swing.JFrame {
                                 //POR ALGUM MOTIVO O BUFFERDIMAGE E O IMAGEICON N PASSAVAM VALORES PARA A OUTRA TELA
                                 //MESMO CHECANDO AQUI Q ELES N ESTAVAM NULOS. DECIDI ENTÃO BAIXAR A IMAGEM PARA UTILIZAR NA OUTRA TELA
                                 BaixarImagem(BuscaWeb.getPosterSerie()[jTableResultadoWeb.getSelectedRow() + 1], "src//images//temp//temp_poster.png");
-                                VisaoDetalhadaSerie TelaSerie = new VisaoDetalhadaSerie(jTextFieldCampoBusca.getText(), PaginaBusca, jTableResultadoWeb.getSelectedRow()+1, BuscaWeb, BuscaWebEspecifica, ipServidor, ip);
+                                VisaoDetalhadaSerie TelaSerie = new VisaoDetalhadaSerie(login, jTextFieldCampoBusca.getText(), PaginaBusca, jTableResultadoWeb.getSelectedRow()+1, BuscaWeb, BuscaWebEspecifica, ipServidor, ip);
                                 BuscaNovaSerieDispose();
                                 TelaSerie.setVisible(true);
                                 Local = true;
-                                try {
-                                    FileWriter arquivoWriter = new FileWriter(arquivoBackupPesquisa, true);
-                                    PrintWriter escrever = new PrintWriter(arquivoWriter);
-                                    escrever.println(jTextFieldCampoBusca.getText() + "#" + PaginaBusca);
-                                    arquivoWriter.close();
-                                    BufferedReader leitor_buffer = new BufferedReader(new FileReader("src/backupPesquisa.txt"));
-                                    while (leitor_buffer.ready()) {
-                                        String linha = leitor_buffer.readLine(); // lê até a última linha
-                                    }
-                                    leitor_buffer.close();
-                                } catch (Exception ex) {
-                                }
                             } catch (IOException ex) {
                                 Logger.getLogger(InsereNovaSerie.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (ClassNotFoundException ex) {
