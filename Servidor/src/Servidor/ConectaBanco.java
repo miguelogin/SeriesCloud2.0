@@ -40,7 +40,7 @@ public class ConectaBanco {
     public void CadastraUsuario(DadosCadastro p) throws SQLException {
         ConectaBanco Banco = new ConectaBanco();
         Statement stAcoesnoBanco = Banco.Conecta.createStatement();
-        stAcoesnoBanco.executeUpdate("INSERT INTO `usuario` (`NOME_USER`, `LOGIN`, `SENHA`, `EMAIL`, `NASCIMENTO`, `TIPO`) VALUES (NULL, '" + p.getNome() + "', '" + p.getLogin() + "', '" + p.getSenha() + "', '" + p.getEmail() + "', '" + p.getNascimento() + "', '2');");
+        stAcoesnoBanco.executeUpdate("INSERT INTO `usuario` (`NOME_USER`, `LOGIN`, `SENHA`, `EMAIL`, `NASCIMENTO`, `TIPO`) VALUES ('" + p.getNome() + "', '" + p.getLogin() + "', '" + p.getSenha() + "', '" + p.getEmail() + "', '" + p.getNascimento() + "', '2');");
     }
 
     public String VerificaCadastro(DadosCadastro p) throws SQLException {

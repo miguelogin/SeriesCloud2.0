@@ -105,7 +105,16 @@ class TrataCliente extends Thread {
                     break;
                 }
                 inFromClient.close();
-            } else if (readUTF.equals("RegistrarSerie")) {
+            } else if(readUTF.equals("Cadastro")){
+                ConectaBanco CBD = new ConectaBanco();
+                ObjectInputStream inFromClient = new ObjectInputStream(cliente.getInputStream());
+                DadosCadastro DadosCadastro;
+                while ((DadosCadastro = (DadosCadastro) inFromClient.readObject()) != null) {
+                    CBD.CadastraUsuario(DadosCadastro);
+                    break;
+                }
+                inFromClient.close();
+            }else if (readUTF.equals("RegistrarSerie")) {
                 ConectaBanco CBD = new ConectaBanco();
                 ObjectInputStream inFromClient = new ObjectInputStream(cliente.getInputStream());
                 DadosCadastro DadosCadastro;

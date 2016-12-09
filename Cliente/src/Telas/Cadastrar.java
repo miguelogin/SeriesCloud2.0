@@ -50,7 +50,47 @@ public class Cadastrar extends javax.swing.JFrame {
                         JOptionPane.showMessageDialog(this, "Este login já esta sendo utilizado por outra pessoa.", "Login inválido", JOptionPane.ERROR_MESSAGE);
                     } else if (DadosCadastro.isExisteEmail()) {
                         JOptionPane.showMessageDialog(this, "Este e-mail já esta sendo utilizado por outra pessoa.", "E-mail inválido", JOptionPane.ERROR_MESSAGE);
-                    } else if(!DadosCadastro.isExisteEmail() && !DadosCadastro.isExisteLogin()){
+                    } else if (!DadosCadastro.isExisteEmail() && !DadosCadastro.isExisteLogin()) {
+                        try {
+                            Socket servidor = new Socket(ipServidor, 1234);
+                            DataOutputStream dOut = new DataOutputStream(servidor.getOutputStream());
+                            dOut.writeUTF("Cadastro");
+                            dOut.flush();
+                            String mes = "00";
+                            if(jComboBoxMesNascimento.getSelectedItem().equals("Janeiro")){
+                                mes = "01";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Fevereiro")){
+                                mes = "02";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Março")){
+                                mes = "03";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Abril")){
+                                mes = "04";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Maio")){
+                                mes = "05";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Junho")){
+                                mes = "06";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Julho")){
+                                mes = "07";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Agosto")){
+                                mes = "08";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Setembro")){
+                                mes = "09";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Outubro")){
+                                mes = "10";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Novembro")){
+                                mes = "11";
+                            }else if(jComboBoxMesNascimento.getSelectedItem().equals("Dezembro")){
+                                mes = "12";
+                            }
+                            String Nascimento = jComboBoxAnoNascimento.getSelectedItem()+"-"+mes+"-"+jComboBoxDiaNascimento.getSelectedItem();
+                            DadosCadastro = new DadosCadastro(ip, jTextFieldNome.getText(), Nascimento, jTextFieldEmail.getText(), jTextFieldLogin.getText(), jPasswordFieldSenha.getText());
+                            ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(servidor.getOutputStream());
+                            ObjectOutputStream.writeObject(DadosCadastro);
+                            ObjectOutputStream.close();
+                            servidor.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(Cadastrar.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         TelaInicial TelaInicial = new TelaInicial();
                         this.dispose();
                     }
@@ -140,7 +180,7 @@ public class Cadastrar extends javax.swing.JFrame {
         getContentPane().add(jComboBoxAnoNascimento);
         jComboBoxAnoNascimento.setBounds(700, 200, 90, 50);
 
-        jComboBoxDiaNascimento.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30" }));
+        jComboBoxDiaNascimento.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30" }));
         getContentPane().add(jComboBoxDiaNascimento);
         jComboBoxDiaNascimento.setBounds(490, 200, 60, 50);
 
