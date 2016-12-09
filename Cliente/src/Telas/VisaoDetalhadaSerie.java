@@ -9,13 +9,18 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,7 +49,6 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
             System.err.println("Não consegui escrever o arquivo bakcupPesquisa.txt");
         }
         arquivoBackupPesquisa.deleteOnExit();
-
         InsereDadosTela(posicao, BuscaWeb, BuscaWebEspecifica, ipServidor, ip);
     }
 
@@ -136,7 +140,41 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
         }
     }
 
-    public void Navega() throws ParseException {
+    public void BaixarImagemSerie() throws IOException {
+        try {
+            URL IDEpisode = new URL("http://api.themoviedb.org/3/tv/" + BuscaWebEspecifica.getId() + "/season/+" + NavegacaoTemporada + "/episode/" + NavegacaoEpisodio + "?api_key=5544cda46810347ff08bf66491167824&language=pt-BR");
+            URLConnection spoofEpisodio = IDEpisode.openConnection();
+            //Spoof the connection so we look like a web browser
+            spoofEpisodio.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; H010818)");
+            BufferedReader inEpisodio = new BufferedReader(new InputStreamReader(spoofEpisodio.getInputStream()));
+            //Loop through every line in the source
+
+            String ResultadoEpisodio = inEpisodio.readLine();
+            String ImagePath = ResultadoEpisodio.substring(ResultadoEpisodio.indexOf("still_path\":\"") + 13, ResultadoEpisodio.indexOf("\",\"vote_average"));
+            URL UrlPosterEpisodio = new URL("http://image.tmdb.org/t/p/300w/" + ImagePath);
+
+            BufferedImage bufferedImage = ImageIO.read(UrlPosterEpisodio);
+            InputStream is = UrlPosterEpisodio.openStream();
+            OutputStream os = new FileOutputStream("src//images//temp//temp_temporada_" + NavegacaoTemporada + "_episodio_" + NavegacaoEpisodio + ".jpg");
+            byte[] b = new byte[2048];
+            int length;
+            while ((length = is.read(b)) != -1) {
+                os.write(b, 0, length);
+            }
+            is.close();
+            os.close();
+        } catch (Exception e) {
+        }
+    }
+
+    public void Navega() throws ParseException, IOException {
+        BaixarImagemSerie();
+        File FileImageEpisodio = new File("src//images//temp//temp_temporada_" + NavegacaoTemporada + "_episodio_" + NavegacaoEpisodio + ".jpg");
+        BufferedImage BufferedImage = ImageIO.read(FileImageEpisodio);
+        ImageIcon ImagemEpisodio = new ImageIcon(BufferedImage.getScaledInstance(990, 650, Image.SCALE_SMOOTH));
+        jLabelImagemEpisodio.setIcon(ImagemEpisodio);
+        ImageIcon fundo = new ImageIcon("src/images/fundo.png");
+        jLabelImagem1.setIcon(fundo);
         if (NavegacaoTemporada == 1 && NavegacaoEpisodio == 1) {
             jButtonAnteriorEpisodio.setVisible(false);
         } else {
@@ -260,6 +298,7 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
         jLabelSeasonEpisode = new javax.swing.JLabel();
         jToggleButtonMarcarAssistido = new javax.swing.JToggleButton();
         jLabelNotaEpisodio = new javax.swing.JLabel();
+        jLabelImagem1 = new javax.swing.JLabel();
         jLabelImagemEpisodio = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -397,8 +436,11 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
         getContentPane().add(jLabelNotaEpisodio);
         jLabelNotaEpisodio.setBounds(330, 390, 840, 60);
 
+        jLabelImagem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/fundo.png"))); // NOI18N
+        getContentPane().add(jLabelImagem1);
+        jLabelImagem1.setBounds(260, 0, 990, 650);
+
         jLabelImagemEpisodio.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Doctor.Who.2005.S09E12.Hell.Bent.720p.WEB-DL.DD5.1.H.264-CtrlHD.mkv_003513762.jpg"))); // NOI18N
-        jLabelImagemEpisodio.setText("Print");
         getContentPane().add(jLabelImagemEpisodio);
         jLabelImagemEpisodio.setBounds(260, 0, 990, 650);
 
@@ -444,6 +486,8 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
             Navega();
         } catch (ParseException ex) {
             Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButtonProximoEpisodioActionPerformed
 
@@ -458,6 +502,8 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
             Navega();
         } catch (ParseException ex) {
             Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButtonAnteriorEpisodioActionPerformed
 
@@ -468,6 +514,8 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
             NavegacaoEpisodio = 1;
             Navega();
         } catch (ParseException ex) {
+            Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(VisaoDetalhadaSerie.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jComboBoxTemporadaActionPerformed
@@ -514,6 +562,7 @@ public class VisaoDetalhadaSerie extends javax.swing.JFrame {
     private javax.swing.JLabel jLabelAnoSerie;
     private javax.swing.JLabel jLabelCategoriasSerie;
     private javax.swing.JLabel jLabelDuracaoData;
+    private javax.swing.JLabel jLabelImagem1;
     private javax.swing.JLabel jLabelImagemEpisodio;
     private javax.swing.JLabel jLabelNomeEpisodio;
     private javax.swing.JLabel jLabelNomeSerie;
