@@ -26,6 +26,13 @@ public class BuscaWebEspecifica {
     private String[][] NomeEpisodio;
     private String[][] ReleaseDate;
     private float[][] NotaEpisodio;
+    
+    private int id;
+
+    public int getId() {
+        return id;
+    }
+    
 
     public String getNomeSerie() {
         return NomeSerie;
@@ -78,7 +85,10 @@ public class BuscaWebEspecifica {
     public float[][] getNotaEpisodio() {
         return NotaEpisodio;
     }
-    
+
+    public String[] getTotalEpisodiosTemporada() {
+        return TotalEpisodiosTemporada;
+    }
 
     public void BuscaWebEspecifica(String NomeSerie, int Ano, int posicao, String ipServidor, String ip) throws IOException, ClassNotFoundException {
         this.NomeSerie = NomeSerie;
@@ -121,7 +131,11 @@ public class BuscaWebEspecifica {
         System.out.println(TotalTemporadas);
 
         //Tempo de Duração em minutos (fazer x nº de episódios x por temporada nº de temporadas 
-        DuracaoEpisodio = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"Runtime\":\"") + 11, ResultadoSerie.indexOf(" min\",")));
+        try {
+            DuracaoEpisodio = Integer.parseInt(ResultadoSerie.substring(ResultadoSerie.indexOf("\"Runtime\":\"") + 11, ResultadoSerie.indexOf(" min\",")));
+        } catch (Exception e) {
+            DuracaoEpisodio = 1;
+        }
         System.out.println(DuracaoEpisodio);
 
         ////////////////capta alguma tradução de sinopse se existir
@@ -205,7 +219,7 @@ public class BuscaWebEspecifica {
 
     public void BuscaTraducao(String NomeBusca, int Ano) throws IOException {
         /////////////////////PESQUISA SINOPSE TRADUZIDA 
-        int id = 57243;
+        id = 57243;
         URL URLSerieTraduzida = new URL("https://api.themoviedb.org/3/search/tv?api_key=5544cda46810347ff08bf66491167824&language=pt-BR&query=" + NomeBusca + "&page=1&first_air_date_year=" + Ano);
         System.out.println("BUSCA DE DADOS DE " + NomeBusca + " TRADUZIDOS = " + URLSerieTraduzida);
         URLConnection spoofSerieTraduzida = URLSerieTraduzida.openConnection();

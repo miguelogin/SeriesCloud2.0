@@ -5,7 +5,8 @@ import java.io.Serializable;
 //CLIENTE
 public class DadosSerie implements Serializable{ 
     
-    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, int QuantidadeCategoria, String Categoria[], int TotalTemporadas, int TotalEpisodios, float NotaSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int DuracaoEpisodio) {
+    public DadosSerie(String NomeSerie, int AnoInicio, int AnoFim, String Sinopse, int QuantidadeCategoria, String Categoria, int TotalTemporadas, int TotalEpisodios, float NotaSerie, String[][] NomeEpisodio, String[][] ReleaseEpisodio, float[][] NotaEpisodio, int DuracaoEpisodio, String ip) {
+        this.ip = ip;
         this.NomeSerie = NomeSerie;
         this.AnoInicio = AnoInicio;
         this.AnoFim = AnoFim;
@@ -38,11 +39,12 @@ public class DadosSerie implements Serializable{
         this.VerificaExistencia = VerificaExistencia;
     }
     
+    private String ip;
     private String NomeSerie;
     private int AnoInicio;
     private int AnoFim;
     private String Sinopse;
-    private String Categoria[];
+    private String Categoria;
     private int QuantidadeCategorias;
     private int TotalTemporadas;
     private int TotalEpisodios;
@@ -52,6 +54,10 @@ public class DadosSerie implements Serializable{
     private float [][] NotaEpisodio;
     private int DuracaoEpisodio;
 
+    public String getIp() {
+        return ip;
+    }
+    
     public String getNomeSerie() {
         return NomeSerie;
     }
@@ -82,14 +88,6 @@ public class DadosSerie implements Serializable{
 
     public void setSinopse(String Sinopse) {
         this.Sinopse = Sinopse;
-    }
-
-    public String[] getGeneros() {
-        return Categoria;
-    }
-
-    public void setGeneros(String[] Generos) {
-        this.Categoria = Generos;
     }
 
     public int getQuantidadeCategorias() {
