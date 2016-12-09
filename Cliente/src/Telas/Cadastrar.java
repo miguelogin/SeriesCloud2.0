@@ -91,6 +91,7 @@ public class Cadastrar extends javax.swing.JFrame {
                         } catch (IOException ex) {
                             Logger.getLogger(Cadastrar.class.getName()).log(Level.SEVERE, null, ex);
                         }
+                        JOptionPane.showMessageDialog(this, "Cadastro concluído!\nAgora você já pode entrar no SeriesCloud", "Cadastro concluído", JOptionPane.INFORMATION_MESSAGE);
                         TelaInicial TelaInicial = new TelaInicial();
                         this.dispose();
                     }
