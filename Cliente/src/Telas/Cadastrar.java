@@ -138,7 +138,6 @@ public class Cadastrar extends javax.swing.JFrame {
         getContentPane().setLayout(null);
 
         jCheckBoxTermos.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jCheckBoxTermos.setSelected(true);
         jCheckBoxTermos.setText("Concordo com os Termos de Serviço e Política de Privacidade");
         jCheckBoxTermos.setAutoscrolls(true);
         jCheckBoxTermos.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -147,7 +146,6 @@ public class Cadastrar extends javax.swing.JFrame {
         jCheckBoxTermos.setBounds(490, 480, 230, 30);
 
         jPasswordFieldSenha.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jPasswordFieldSenha.setText("migueldeitos2");
         getContentPane().add(jPasswordFieldSenha);
         jPasswordFieldSenha.setBounds(490, 410, 300, 50);
 
@@ -168,7 +166,6 @@ public class Cadastrar extends javax.swing.JFrame {
         jLabel8.setBounds(400, 280, 160, 29);
 
         jTextFieldEmail.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jTextFieldEmail.setText("migueldeitos2@gmail.com");
         getContentPane().add(jTextFieldEmail);
         jTextFieldEmail.setBounds(490, 270, 300, 50);
 
@@ -192,7 +189,6 @@ public class Cadastrar extends javax.swing.JFrame {
         jLabel6.setBounds(400, 150, 160, 29);
 
         jTextFieldNome.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jTextFieldNome.setText("Miguel Deitos");
         getContentPane().add(jTextFieldNome);
         jTextFieldNome.setBounds(490, 140, 300, 50);
 
@@ -218,7 +214,6 @@ public class Cadastrar extends javax.swing.JFrame {
         jLabel4.setBounds(400, 350, 160, 29);
 
         jTextFieldLogin.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jTextFieldLogin.setText("miguelogin");
         getContentPane().add(jTextFieldLogin);
         jTextFieldLogin.setBounds(490, 340, 300, 50);
 
